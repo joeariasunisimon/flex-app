@@ -53,7 +53,7 @@ fun WelcomeScreen(
         Spacer(modifier = Modifier.weight(1f))
 
         Button(
-            onClick = { onEvent(WelcomeScreenEvents.OnGetStartedClicked) },
+            onClick = { onNavigate(NavigationEvent.NavigateToToolSelection) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),

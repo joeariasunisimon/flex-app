@@ -10,5 +10,6 @@ data class BingoFigureSelectionScreenState(
     val customPattern: Set<Pair<Int, Int>> = emptySet(),
     val isLoading: Boolean = true,
     val isUpdating: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val gameReady: Boolean = false
 )

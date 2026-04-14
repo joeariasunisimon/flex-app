@@ -9,7 +9,6 @@ import co.jarias.flexapp.domain.usecase.CheckWinConditionUseCase
 import co.jarias.flexapp.domain.usecase.CompleteGameUseCase
 import co.jarias.flexapp.domain.usecase.GetGameStateUseCase
 import co.jarias.flexapp.domain.usecase.MarkNumberUseCase
-import co.jarias.flexapp.ui.navigation.NavigationEvent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,9 +23,6 @@ class BingoGamePlayScreenViewModel(
 
     private val _state = MutableStateFlow(BingoGamePlayScreenState())
     val state: StateFlow<BingoGamePlayScreenState> = _state.asStateFlow()
-
-    private val _navigationEvent = MutableStateFlow<NavigationEvent?>(null)
-    val navigationEvent: StateFlow<NavigationEvent?> = _navigationEvent.asStateFlow()
 
     private val getGameStateUseCase = GetGameStateUseCase(
         gameRepository, bingoCardRepository, markedNumberRepository,
@@ -76,12 +72,6 @@ class BingoGamePlayScreenViewModel(
         when (event) {
             is BingoGamePlayScreenEvents.OnNumberMarked -> markNumber(event.number)
             is BingoGamePlayScreenEvents.OnWinDialogDismissed -> dismissWinDialog()
-            is BingoGamePlayScreenEvents.OnBackToMenuClicked -> {
-                _navigationEvent.value = NavigationEvent.NavigateToBingoGameList
-            }
-            is BingoGamePlayScreenEvents.OnBackPressed -> {
-                _navigationEvent.value = NavigationEvent.OnNavigateUp
-            }
             is BingoGamePlayScreenEvents.OnRetryClicked -> {
                 loadGame(currentGameId)
             }
@@ -120,9 +110,5 @@ class BingoGamePlayScreenViewModel(
 
     private fun dismissWinDialog() {
         _state.value = _state.value.copy(showWinDialog = false)
-    }
-
-    fun onNavigationHandled() {
-        _navigationEvent.value = null
     }
 }

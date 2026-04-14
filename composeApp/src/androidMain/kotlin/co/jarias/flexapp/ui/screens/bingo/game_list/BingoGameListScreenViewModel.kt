@@ -8,7 +8,6 @@ import co.jarias.flexapp.data.repository.MarkedNumberRepository
 import co.jarias.flexapp.domain.usecase.DropGameUseCase
 import co.jarias.flexapp.domain.usecase.GetAllGamesUseCase
 import co.jarias.flexapp.domain.usecase.RestartGameUseCase
-import co.jarias.flexapp.ui.navigation.NavigationEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,9 +24,6 @@ class BingoGameListScreenViewModel(
     private val _state = MutableStateFlow(BingoGameListScreenState())
     val state: StateFlow<BingoGameListScreenState> = _state.asStateFlow()
 
-    private val _navigationEvent = MutableStateFlow<NavigationEvent?>(null)
-    val navigationEvent: StateFlow<NavigationEvent?> = _navigationEvent.asStateFlow()
-
     private val getAllGamesUseCase = GetAllGamesUseCase(gameRepository)
     private val restartGameUseCase = RestartGameUseCase(gameRepository, markedNumberRepository)
     private val dropGameUseCase = DropGameUseCase(gameRepository, bingoCardRepository, markedNumberRepository)
@@ -38,15 +34,8 @@ class BingoGameListScreenViewModel(
 
     fun onEvent(event: BingoGameListScreenEvents) {
         when (event) {
-            is BingoGameListScreenEvents.OnCreateNewGameClicked -> {
-                _navigationEvent.value = NavigationEvent.NavigateToBingoGameSetup
-            }
-            is BingoGameListScreenEvents.OnBackPressed -> {
-                _navigationEvent.value = NavigationEvent.OnNavigateUp
-            }
-            is BingoGameListScreenEvents.OnPlayGame -> {
-                _navigationEvent.value = NavigationEvent.NavigateToBingoGamePlay(event.gameId)
-            }
+            is BingoGameListScreenEvents.OnCreateNewGameClicked -> {}
+            is BingoGameListScreenEvents.OnPlayGame -> {}
             is BingoGameListScreenEvents.OnRestartGame -> {
                 restartGame(event.gameId)
             }
@@ -107,9 +96,5 @@ class BingoGameListScreenViewModel(
                 )
             }
         }
-    }
-
-    fun onNavigationHandled() {
-        _navigationEvent.value = null
     }
 }

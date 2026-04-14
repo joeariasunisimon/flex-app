@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import co.jarias.flexapp.data.repository.BingoCardRepository
 import co.jarias.flexapp.domain.BingoCard
 import co.jarias.flexapp.domain.BingoCell
-import co.jarias.flexapp.ui.navigation.NavigationEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,9 +19,6 @@ class BingoCardSetupScreenViewModel(
 
     private val _state = MutableStateFlow(BingoCardSetupScreenState())
     val state: StateFlow<BingoCardSetupScreenState> = _state.asStateFlow()
-
-    private val _navigationEvent = MutableStateFlow<NavigationEvent?>(null)
-    val navigationEvent: StateFlow<NavigationEvent?> = _navigationEvent.asStateFlow()
 
     init {
         if (gameId != 0L) {
@@ -92,9 +88,6 @@ class BingoCardSetupScreenViewModel(
             is BingoCardSetupScreenEvents.OnNextColumn -> nextColumn()
             is BingoCardSetupScreenEvents.OnPreviousColumn -> previousColumn()
             is BingoCardSetupScreenEvents.OnSaveCard -> saveCard()
-            is BingoCardSetupScreenEvents.OnBackPressed -> {
-                _navigationEvent.value = NavigationEvent.OnNavigateUp
-            }
         }
     }
 
@@ -172,7 +165,6 @@ class BingoCardSetupScreenViewModel(
                     isSaving = false,
                     cardSaved = true
                 )
-                _navigationEvent.value = NavigationEvent.NavigateToBingoFigureSelection(currentState.gameId)
             } catch (e: Exception) {
                 _state.value = currentState.copy(
                     isSaving = false,
@@ -193,9 +185,5 @@ class BingoCardSetupScreenViewModel(
                 }
             }
         }
-    }
-
-    fun onNavigationHandled() {
-        _navigationEvent.value = null
     }
 }

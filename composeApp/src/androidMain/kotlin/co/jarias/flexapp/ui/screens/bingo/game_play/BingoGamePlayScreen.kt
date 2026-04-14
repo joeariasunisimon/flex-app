@@ -37,7 +37,7 @@ fun BingoGamePlayScreen(
             TopAppBar(
                 title = { Text(state.gameState?.game?.name ?: "Bingo Game") },
                 navigationIcon = {
-                    IconButton(onClick = { onEvent(BingoGamePlayScreenEvents.OnBackPressed) }) {
+                    IconButton(onClick = { onNavigate(NavigationEvent.OnNavigateUp) }) {
                         Text("←", fontSize = 20.sp)
                     }
                 }
@@ -91,7 +91,7 @@ fun BingoGamePlayScreen(
                     gameName = state.gameState?.game?.name ?: "",
                     targetFigure = state.gameState?.game?.targetFigure?.displayName ?: "",
                     onDismiss = { onEvent(BingoGamePlayScreenEvents.OnWinDialogDismissed) },
-                    onBackToMenu = { onEvent(BingoGamePlayScreenEvents.OnBackToMenuClicked) }
+                    onBackToMenu = { onNavigate(NavigationEvent.NavigateToBingoGameList) }
                 )
             }
         }

@@ -15,7 +15,7 @@ fun handleNavigationEvent(
     event: NavigationEvent
 ) {
     when (event) {
-        is NavigationEvent.OnNavigateUp -> navController.navigateUp()
+        is NavigationEvent.OnNavigateUp -> navController.popBackStack()
 
         is NavigationEvent.NavigateToToolSelection -> {
             navController.navigate(AppDestinations.TOOL_SELECTION) {

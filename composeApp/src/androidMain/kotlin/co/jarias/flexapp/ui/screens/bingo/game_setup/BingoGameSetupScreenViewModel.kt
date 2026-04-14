@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.jarias.flexapp.data.repository.GameRepository
 import co.jarias.flexapp.domain.usecase.CreateGameUseCase
-import co.jarias.flexapp.ui.navigation.NavigationEvent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,9 +16,6 @@ class BingoGameSetupScreenViewModel(
     private val _state = MutableStateFlow(BingoGameSetupScreenState())
     val state: StateFlow<BingoGameSetupScreenState> = _state.asStateFlow()
 
-    private val _navigationEvent = MutableStateFlow<NavigationEvent?>(null)
-    val navigationEvent: StateFlow<NavigationEvent?> = _navigationEvent.asStateFlow()
-
     private val createGameUseCase = CreateGameUseCase(gameRepository)
 
     fun onEvent(event: BingoGameSetupScreenEvents) {
@@ -31,9 +27,6 @@ class BingoGameSetupScreenViewModel(
                 )
             }
             is BingoGameSetupScreenEvents.OnCreateGameClicked -> createGame()
-            is BingoGameSetupScreenEvents.OnBackPressed -> {
-                _navigationEvent.value = NavigationEvent.OnNavigateUp
-            }
         }
     }
 
@@ -58,7 +51,6 @@ class BingoGameSetupScreenViewModel(
                         createdGameId = gameId,
                         errorMessage = null
                     )
-                    _navigationEvent.value = NavigationEvent.NavigateToBingoCardSetup(gameId)
                 }
             } catch (e: Exception) {
                 _state.value = currentState.copy(
@@ -67,9 +59,5 @@ class BingoGameSetupScreenViewModel(
                 )
             }
         }
-    }
-
-    fun onNavigationHandled() {
-        _navigationEvent.value = null
     }
 }

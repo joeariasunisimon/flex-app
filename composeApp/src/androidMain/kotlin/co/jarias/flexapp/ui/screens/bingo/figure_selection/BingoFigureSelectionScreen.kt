@@ -28,6 +28,12 @@ fun BingoFigureSelectionScreen(
 ) {
     val columnLabels = listOf("B", "I", "N", "G", "O")
 
+    LaunchedEffect(state.gameReady) {
+        if (state.gameReady) {
+            onNavigate(NavigationEvent.NavigateToBingoGamePlay(state.gameId))
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -36,7 +42,7 @@ fun BingoFigureSelectionScreen(
         TopAppBar(
             title = { Text("Select Win Figure") },
             navigationIcon = {
-                IconButton(onClick = { onEvent(BingoFigureSelectionScreenEvents.OnBackPressed) }) {
+                IconButton(onClick = { onNavigate(NavigationEvent.OnNavigateUp) }) {
                     Text("←", style = MaterialTheme.typography.headlineSmall)
                 }
             }

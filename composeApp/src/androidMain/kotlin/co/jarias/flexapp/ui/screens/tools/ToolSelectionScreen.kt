@@ -24,14 +24,14 @@ fun ToolSelectionScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        TopAppBar(
-            title = { Text("Select a Game") },
-            navigationIcon = {
-                IconButton(onClick = { onEvent(ToolSelectionScreenEvents.OnBackPressed) }) {
-                    Text("←", style = MaterialTheme.typography.headlineSmall)
+TopAppBar(
+                title = { Text("Select a Game") },
+                navigationIcon = {
+                    IconButton(onClick = { onNavigate(NavigationEvent.OnNavigateUp) }) {
+                        Text("←", style = MaterialTheme.typography.headlineSmall)
+                    }
                 }
-            }
-        )
+            )
 
         Column(
             modifier = Modifier
@@ -50,7 +50,7 @@ fun ToolSelectionScreen(
                 title = "Bingo",
                 description = "Play the classic bingo game with customizable cards and target figures",
                 icon = "🎲",
-                onClick = { onEvent(ToolSelectionScreenEvents.OnBingoSelected) }
+                onClick = { onNavigate(NavigationEvent.NavigateToBingoGameList) }
             )
 
             Spacer(modifier = Modifier.height(16.dp))

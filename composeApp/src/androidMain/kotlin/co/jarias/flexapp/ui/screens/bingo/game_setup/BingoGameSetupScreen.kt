@@ -19,6 +19,12 @@ fun BingoGameSetupScreen(
     onEvent: (BingoGameSetupScreenEvents) -> Unit,
     state: BingoGameSetupScreenState
 ) {
+    LaunchedEffect(state.createdGameId) {
+        state.createdGameId?.let { gameId ->
+            onNavigate(NavigationEvent.NavigateToBingoCardSetup(gameId))
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -27,7 +33,7 @@ fun BingoGameSetupScreen(
         TopAppBar(
             title = { Text("Create New Game") },
             navigationIcon = {
-                IconButton(onClick = { onEvent(BingoGameSetupScreenEvents.OnBackPressed) }) {
+                IconButton(onClick = { onNavigate(NavigationEvent.OnNavigateUp) }) {
                     Text("←", style = MaterialTheme.typography.headlineSmall)
                 }
             }

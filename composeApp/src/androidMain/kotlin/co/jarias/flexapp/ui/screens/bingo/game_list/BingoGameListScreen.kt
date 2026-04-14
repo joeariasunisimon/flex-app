@@ -28,12 +28,12 @@ fun BingoGameListScreen(
             TopAppBar(
                 title = { Text("Your Bingo Games") },
                 navigationIcon = {
-                    IconButton(onClick = { onEvent(BingoGameListScreenEvents.OnBackPressed) }) {
+                    IconButton(onClick = { onNavigate(NavigationEvent.OnNavigateUp) }) {
                         Text("←", fontSize = 20.sp)
                     }
                 },
                 actions = {
-                    Button(onClick = { onEvent(BingoGameListScreenEvents.OnCreateNewGameClicked) }) {
+                    Button(onClick = { onNavigate(NavigationEvent.NavigateToBingoGameSetup) }) {
                         Text("New Game")
                     }
                 }
@@ -106,7 +106,7 @@ fun BingoGameListScreen(
                             GameListItem(
                                 game = game,
                                 onPlay = {
-                                    game.id?.let { onEvent(BingoGameListScreenEvents.OnPlayGame(it)) }
+                                    game.id?.let { onNavigate(NavigationEvent.NavigateToBingoGamePlay(it)) }
                                 },
                                 onRestart = {
                                     game.id?.let { onEvent(BingoGameListScreenEvents.OnRestartGame(it)) }

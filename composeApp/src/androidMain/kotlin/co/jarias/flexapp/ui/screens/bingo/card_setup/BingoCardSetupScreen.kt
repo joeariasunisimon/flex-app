@@ -28,6 +28,12 @@ fun BingoCardSetupScreen(
     onEvent: (BingoCardSetupScreenEvents) -> Unit,
     state: BingoCardSetupScreenState
 ) {
+    LaunchedEffect(state.cardSaved) {
+        if (state.cardSaved) {
+            onNavigate(NavigationEvent.NavigateToBingoFigureSelection(state.gameId))
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -36,7 +42,7 @@ fun BingoCardSetupScreen(
         TopAppBar(
             title = { Text("Set Up Your Bingo Card") },
             navigationIcon = {
-                IconButton(onClick = { onEvent(BingoCardSetupScreenEvents.OnBackPressed) }) {
+                IconButton(onClick = { onNavigate(NavigationEvent.OnNavigateUp) }) {
                     Text("←", style = MaterialTheme.typography.headlineSmall)
                 }
             }

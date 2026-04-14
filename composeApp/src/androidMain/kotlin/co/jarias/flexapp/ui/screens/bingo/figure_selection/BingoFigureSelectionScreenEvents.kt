@@ -6,5 +6,4 @@ sealed class BingoFigureSelectionScreenEvents {
     data class OnFigureSelected(val figure: WinCondition) : BingoFigureSelectionScreenEvents()
     data class OnCustomPatternToggled(val row: Int, val col: Int) : BingoFigureSelectionScreenEvents()
     data object OnContinue : BingoFigureSelectionScreenEvents()
-    data object OnBackPressed : BingoFigureSelectionScreenEvents()
 }
