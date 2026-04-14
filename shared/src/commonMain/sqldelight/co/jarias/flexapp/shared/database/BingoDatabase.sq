@@ -1,0 +1,72 @@
+-- BingoDatabase.sq
+-- Define the database schema for the Bingo tracker
+
+CREATE TABLE Game (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    target_figure TEXT,
+    created_at TEXT NOT NULL,
+    is_completed INTEGER NOT NULL DEFAULT 0,
+    completed_at TEXT
+);
+
+CREATE TABLE BingoCard (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    game_id INTEGER NOT NULL,
+    grid_data TEXT NOT NULL, -- JSON serialized 5x5 grid
+    FOREIGN KEY (game_id) REFERENCES Game(id) ON DELETE CASCADE
+);
+
+CREATE TABLE MarkedNumber (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    game_id INTEGER NOT NULL,
+    number INTEGER NOT NULL,
+    FOREIGN KEY (game_id) REFERENCES Game(id) ON DELETE CASCADE
+);
+
+-- Game queries
+selectAllGames:
+SELECT * FROM Game;
+
+selectGameById:
+SELECT * FROM Game WHERE id = ?;
+
+insertGame:
+INSERT INTO Game(name, target_figure, created_at) VALUES (?, ?, ?);
+
+updateGame:
+UPDATE Game SET name = ?, target_figure = ?, created_at = ? WHERE id = ?;
+
+updateGameCompletion:
+UPDATE Game SET is_completed = ?, completed_at = ? WHERE id = ?;
+
+deleteGame:
+DELETE FROM Game WHERE id = ?;
+
+-- BingoCard queries
+selectCardsByGameId:
+SELECT * FROM BingoCard WHERE game_id = ?;
+
+insertCard:
+INSERT INTO BingoCard(game_id, grid_data) VALUES (?, ?);
+
+deleteCard:
+DELETE FROM BingoCard WHERE id = ?;
+
+-- MarkedNumber queries
+selectMarkedNumbersByGameId:
+SELECT * FROM MarkedNumber WHERE game_id = ?;
+
+insertMarkedNumber:
+INSERT INTO MarkedNumber(game_id, number) VALUES (?, ?);
+
+deleteMarkedNumber:
+DELETE FROM MarkedNumber WHERE id = ?;
+
+deleteAllMarkedNumbersForGame:
+DELETE FROM MarkedNumber WHERE game_id = ?;
+
+-- Migrations
+-- Version 2: Make target_figure nullable (April 13, 2026)
+-- This migration handles games created with older schema that had NOT NULL constraint
+
