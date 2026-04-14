@@ -1,4 +1,4 @@
-package co.jarias.flexapp.ui.screens.bingo
+package co.jarias.flexapp.ui.screens.bingo.game_list
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,61 +13,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import co.jarias.flexapp.viewmodel.BingoGameListViewModel
-import co.jarias.flexapp.data.local.DatabaseDriverFactory
-import co.jarias.flexapp.data.local.Database
-import co.jarias.flexapp.data.repository.GameRepositoryImpl
-import co.jarias.flexapp.data.repository.BingoCardRepositoryImpl
-import co.jarias.flexapp.data.repository.MarkedNumberRepositoryImpl
-import androidx.compose.ui.platform.LocalContext
 import co.jarias.flexapp.domain.Game
-import co.jarias.flexapp.domain.usecase.RestartGameUseCase
-import co.jarias.flexapp.domain.usecase.DropGameUseCase
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import co.jarias.flexapp.ui.navigation.NavigationEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BingoGameListScreen(
-    onGamePlay: (Long) -> Unit,
-    onGameSetup: (Long) -> Unit,
-    onCreateNewGame: () -> Unit,
-    onBackPressed: () -> Unit
+    onNavigate: (NavigationEvent) -> Unit,
+    onEvent: (BingoGameListScreenEvents) -> Unit,
+    state: BingoGameListScreenState
 ) {
-    val context = LocalContext.current
-
-    // Create repositories
-    val database = remember {
-        Database(DatabaseDriverFactory(context))
-    }
-    val gameRepository = remember {
-        GameRepositoryImpl(database)
-    }
-    val bingoCardRepository = remember {
-        BingoCardRepositoryImpl(database)
-    }
-    val markedNumberRepository = remember {
-        MarkedNumberRepositoryImpl(database)
-    }
-    val viewModel: BingoGameListViewModel = remember {
-        BingoGameListViewModel(gameRepository)
-    }
-
-    val uiState by viewModel.uiState.collectAsState()
-
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Your Bingo Games") },
                 navigationIcon = {
-                    IconButton(onClick = onBackPressed) {
+                    IconButton(onClick = { onEvent(BingoGameListScreenEvents.OnBackPressed) }) {
                         Text("←", fontSize = 20.sp)
                     }
                 },
                 actions = {
-                    Button(onClick = onCreateNewGame) {
+                    Button(onClick = { onEvent(BingoGameListScreenEvents.OnCreateNewGameClicked) }) {
                         Text("New Game")
                     }
                 }
@@ -80,12 +46,12 @@ fun BingoGameListScreen(
                 .padding(padding)
         ) {
             when {
-                uiState.isLoading -> {
+                state.isLoading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
-                uiState.errorMessage != null -> {
+                state.errorMessage != null -> {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -94,17 +60,17 @@ fun BingoGameListScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = uiState.errorMessage!!,
+                            text = state.errorMessage,
                             color = MaterialTheme.colorScheme.error,
                             textAlign = TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { viewModel.loadGames() }) {
+                        Button(onClick = { onEvent(BingoGameListScreenEvents.OnRetryClicked) }) {
                             Text("Retry")
                         }
                     }
                 }
-                uiState.games.isEmpty() -> {
+                state.games.isEmpty() -> {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -125,7 +91,7 @@ fun BingoGameListScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.height(24.dp))
-                        Button(onClick = onCreateNewGame) {
+                        Button(onClick = { onEvent(BingoGameListScreenEvents.OnCreateNewGameClicked) }) {
                             Text("Create Game")
                         }
                     }
@@ -136,46 +102,17 @@ fun BingoGameListScreen(
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(uiState.games) { game ->
+                        items(state.games) { game ->
                             GameListItem(
                                 game = game,
                                 onPlay = {
-                                    CoroutineScope(Dispatchers.Main).launch {
-                                        val hasCard = withContext(Dispatchers.IO) {
-                                            bingoCardRepository.getCardByGameId(game.id!!) != null
-                                        }
-                                        if (hasCard) {
-                                            onGamePlay(game.id!!)
-                                        } else {
-                                            onGameSetup(game.id!!)
-                                        }
-                                    }
+                                    game.id?.let { onEvent(BingoGameListScreenEvents.OnPlayGame(it)) }
                                 },
                                 onRestart = {
-                                    val restartUseCase = RestartGameUseCase(gameRepository, markedNumberRepository)
-                                    CoroutineScope(Dispatchers.Main).launch {
-                                        try {
-                                            withContext(Dispatchers.IO) {
-                                                restartUseCase(game.id!!)
-                                            }
-                                            viewModel.loadGames()
-                                        } catch (_: Exception) {
-                                            // Handle error
-                                        }
-                                    }
+                                    game.id?.let { onEvent(BingoGameListScreenEvents.OnRestartGame(it)) }
                                 },
                                 onDelete = {
-                                    val dropUseCase = DropGameUseCase(gameRepository, bingoCardRepository, markedNumberRepository)
-                                    CoroutineScope(Dispatchers.Main).launch {
-                                        try {
-                                            withContext(Dispatchers.IO) {
-                                                dropUseCase(game.id!!)
-                                            }
-                                            viewModel.loadGames()
-                                        } catch (_: Exception) {
-                                            // Handle error
-                                        }
-                                    }
+                                    game.id?.let { onEvent(BingoGameListScreenEvents.OnDeleteGame(it)) }
                                 }
                             )
                         }
@@ -271,7 +208,6 @@ private fun GameListItem(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Action buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
