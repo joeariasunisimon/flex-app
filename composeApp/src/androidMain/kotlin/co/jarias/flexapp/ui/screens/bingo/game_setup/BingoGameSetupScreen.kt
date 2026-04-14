@@ -1,4 +1,4 @@
-package co.jarias.flexapp.ui.screens.bingo
+package co.jarias.flexapp.ui.screens.bingo.game_setup
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -10,51 +10,24 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import co.jarias.flexapp.viewmodel.BingoGameViewModel
-import co.jarias.flexapp.data.local.DatabaseDriverFactory
-import co.jarias.flexapp.data.local.Database
-import co.jarias.flexapp.data.repository.GameRepositoryImpl
-import android.content.Context
-import androidx.compose.ui.platform.LocalContext
+import co.jarias.flexapp.ui.navigation.NavigationEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BingoGameSetupScreen(
-    onGameCreated: (Long) -> Unit,
-    onBackPressed: () -> Unit
+    onNavigate: (NavigationEvent) -> Unit,
+    onEvent: (BingoGameSetupScreenEvents) -> Unit,
+    state: BingoGameSetupScreenState
 ) {
-    val context = LocalContext.current
-
-    // Create repositories
-    val database = remember {
-        Database(DatabaseDriverFactory(context))
-    }
-    val gameRepository = remember {
-        GameRepositoryImpl(database)
-    }
-    val viewModel: BingoGameViewModel = remember {
-        BingoGameViewModel(gameRepository)
-    }
-
-    val uiState by viewModel.uiState.collectAsState()
-
-    // Navigate on game creation
-    LaunchedEffect(uiState.gameCreated) {
-        if (uiState.gameCreated && uiState.createdGameId != null) {
-            onGameCreated(uiState.createdGameId!!)
-        }
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Top App Bar
         TopAppBar(
             title = { Text("Create New Game") },
             navigationIcon = {
-                IconButton(onClick = onBackPressed) {
+                IconButton(onClick = { onEvent(BingoGameSetupScreenEvents.OnBackPressed) }) {
                     Text("←", style = MaterialTheme.typography.headlineSmall)
                 }
             }
@@ -66,7 +39,6 @@ fun BingoGameSetupScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(24.dp)
         ) {
-            // Game Name Input
             Text(
                 text = "Game Name",
                 style = MaterialTheme.typography.titleMedium,
@@ -75,8 +47,8 @@ fun BingoGameSetupScreen(
             )
 
             OutlinedTextField(
-                value = uiState.gameName,
-                onValueChange = { viewModel.updateGameName(it) },
+                value = state.gameName,
+                onValueChange = { onEvent(BingoGameSetupScreenEvents.OnGameNameChanged(it)) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 24.dp),
@@ -84,7 +56,6 @@ fun BingoGameSetupScreen(
                 singleLine = true
             )
 
-            // Info about card generation
             Text(
                 text = "You will set up your own Bingo card manually after creating the game.",
                 style = MaterialTheme.typography.bodyMedium,
@@ -92,15 +63,14 @@ fun BingoGameSetupScreen(
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
-            // Error Message
-            if (uiState.errorMessage != null) {
+            state.errorMessage?.let { error ->
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
                     color = MaterialTheme.colorScheme.errorContainer
                 ) {
                     Text(
-                        text = uiState.errorMessage!!,
+                        text = error,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onErrorContainer,
                         modifier = Modifier.padding(12.dp)
@@ -110,15 +80,14 @@ fun BingoGameSetupScreen(
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // Create Game Button
             Button(
-                onClick = { viewModel.createGame() },
+                onClick = { onEvent(BingoGameSetupScreenEvents.OnCreateGameClicked) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
-                enabled = !uiState.isLoading
+                enabled = !state.isLoading
             ) {
-                if (uiState.isLoading) {
+                if (state.isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
                         color = MaterialTheme.colorScheme.onPrimary

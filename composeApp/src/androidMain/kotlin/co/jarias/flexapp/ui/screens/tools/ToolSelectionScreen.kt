@@ -10,23 +10,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import co.jarias.flexapp.ui.navigation.NavigationEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ToolSelectionScreen(
-    onBingoSelected: () -> Unit,
-    onBackPressed: () -> Unit
+    onNavigate: (NavigationEvent) -> Unit,
+    onEvent: (ToolSelectionScreenEvents) -> Unit,
+    state: ToolSelectionScreenState
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Top App Bar
         TopAppBar(
             title = { Text("Select a Game") },
             navigationIcon = {
-                IconButton(onClick = onBackPressed) {
+                IconButton(onClick = { onEvent(ToolSelectionScreenEvents.OnBackPressed) }) {
                     Text("←", style = MaterialTheme.typography.headlineSmall)
                 }
             }
@@ -45,17 +46,15 @@ fun ToolSelectionScreen(
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
-            // Bingo Card
             ToolCard(
                 title = "Bingo",
                 description = "Play the classic bingo game with customizable cards and target figures",
                 icon = "🎲",
-                onClick = onBingoSelected
+                onClick = { onEvent(ToolSelectionScreenEvents.OnBingoSelected) }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Coming Soon Card
             ToolCard(
                 title = "Coming Soon...",
                 description = "More exciting games will be available soon!",
@@ -68,7 +67,7 @@ fun ToolSelectionScreen(
 }
 
 @Composable
-fun ToolCard(
+private fun ToolCard(
     title: String,
     description: String,
     icon: String,

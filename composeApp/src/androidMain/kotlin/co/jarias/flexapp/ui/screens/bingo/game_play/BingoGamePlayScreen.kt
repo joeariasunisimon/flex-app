@@ -1,4 +1,4 @@
-package co.jarias.flexapp.ui.screens.bingo
+package co.jarias.flexapp.ui.screens.bingo.game_play
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,56 +18,26 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import co.jarias.flexapp.viewmodel.BingoGamePlayViewModel
-import co.jarias.flexapp.data.local.DatabaseDriverFactory
-import co.jarias.flexapp.data.local.Database
-import co.jarias.flexapp.data.repository.GameRepositoryImpl
-import co.jarias.flexapp.data.repository.BingoCardRepositoryImpl
-import co.jarias.flexapp.data.repository.MarkedNumberRepositoryImpl
-import androidx.compose.ui.platform.LocalContext
 import co.jarias.flexapp.domain.BingoCard
 import co.jarias.flexapp.domain.BingoCell
 import co.jarias.flexapp.domain.GameState
 import co.jarias.flexapp.domain.WinCondition
+import co.jarias.flexapp.ui.navigation.NavigationEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BingoGamePlayScreen(
     gameId: Long,
-    onBackPressed: () -> Unit
+    onNavigate: (NavigationEvent) -> Unit,
+    onEvent: (BingoGamePlayScreenEvents) -> Unit,
+    state: BingoGamePlayScreenState
 ) {
-    val context = LocalContext.current
-
-    // Create repositories
-    val database = remember {
-        Database(DatabaseDriverFactory(context))
-    }
-    val gameRepository = remember {
-        GameRepositoryImpl(database)
-    }
-    val bingoCardRepository = remember {
-        BingoCardRepositoryImpl(database)
-    }
-    val markedNumberRepository = remember {
-        MarkedNumberRepositoryImpl(database)
-    }
-    val viewModel: BingoGamePlayViewModel = remember {
-        BingoGamePlayViewModel(gameRepository, bingoCardRepository, markedNumberRepository)
-    }
-
-    val uiState by viewModel.uiState.collectAsState()
-
-    // Load game on first composition
-    LaunchedEffect(gameId) {
-        viewModel.loadGame(gameId)
-    }
-
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(uiState.gameState?.game?.name ?: "Bingo Game") },
+                title = { Text(state.gameState?.game?.name ?: "Bingo Game") },
                 navigationIcon = {
-                    IconButton(onClick = onBackPressed) {
+                    IconButton(onClick = { onEvent(BingoGamePlayScreenEvents.OnBackPressed) }) {
                         Text("←", fontSize = 20.sp)
                     }
                 }
@@ -80,12 +50,12 @@ fun BingoGamePlayScreen(
                 .padding(padding)
         ) {
             when {
-                uiState.isLoading -> {
+                state.isLoading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
-                uiState.errorMessage != null -> {
+                state.errorMessage != null -> {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -94,36 +64,34 @@ fun BingoGamePlayScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = uiState.errorMessage!!,
+                            text = state.errorMessage,
                             color = MaterialTheme.colorScheme.error,
                             textAlign = TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { viewModel.loadGame(gameId) }) {
+                        Button(onClick = { onEvent(BingoGamePlayScreenEvents.OnRetryClicked) }) {
                             Text("Retry")
                         }
                     }
                 }
-                uiState.gameState != null -> {
+                state.gameState != null -> {
                     BingoGameContent(
-                        gameState = uiState.gameState!!,
+                        gameState = state.gameState,
                         onNumberClicked = { number ->
                             if (number != null) {
-                                viewModel.markNumber(number)
+                                onEvent(BingoGamePlayScreenEvents.OnNumberMarked(number))
                             }
-                        },
-                        onErrorDismissed = { viewModel.clearErrorMessage() }
+                        }
                     )
                 }
             }
 
-            // Win Dialog
-            if (uiState.showWinDialog) {
+            if (state.showWinDialog) {
                 WinDialog(
-                    gameName = uiState.gameState?.game?.name ?: "",
-                    targetFigure = uiState.gameState?.game?.targetFigure?.displayName ?: "",
-                    onDismiss = { viewModel.dismissWinDialog() },
-                    onBackToMenu = onBackPressed
+                    gameName = state.gameState?.game?.name ?: "",
+                    targetFigure = state.gameState?.game?.targetFigure?.displayName ?: "",
+                    onDismiss = { onEvent(BingoGamePlayScreenEvents.OnWinDialogDismissed) },
+                    onBackToMenu = { onEvent(BingoGamePlayScreenEvents.OnBackToMenuClicked) }
                 )
             }
         }
@@ -133,8 +101,7 @@ fun BingoGamePlayScreen(
 @Composable
 private fun BingoGameContent(
     gameState: GameState,
-    onNumberClicked: (Int?) -> Unit,
-    onErrorDismissed: () -> Unit
+    onNumberClicked: (Int?) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -142,7 +109,6 @@ private fun BingoGameContent(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Game Info
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp)
@@ -165,7 +131,6 @@ private fun BingoGameContent(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Progress indicator
                 val targetCells = gameState.game.targetFigure?.requiredCells?.size ?: 0
                 val markedWinningCells = gameState.game.targetFigure?.requiredCells?.count { (row, col) ->
                     val cell = gameState.card.grid[row][col]
@@ -197,7 +162,6 @@ private fun BingoGameContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Bingo Card
         BingoCardGrid(
             card = gameState.card,
             markedNumbers = gameState.markedNumbers,
@@ -207,7 +171,6 @@ private fun BingoGameContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Number Selector
         NumberSelector(
             markedNumbers = gameState.markedNumbers,
             onNumberClicked = onNumberClicked
@@ -232,7 +195,6 @@ private fun BingoCardGrid(
             .background(Color.White, RoundedCornerShape(12.dp))
             .padding(8.dp)
     ) {
-        // Column headers
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -254,7 +216,6 @@ private fun BingoCardGrid(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Bingo grid
         card.grid.forEachIndexed { rowIndex, row ->
             Row(
                 modifier = Modifier

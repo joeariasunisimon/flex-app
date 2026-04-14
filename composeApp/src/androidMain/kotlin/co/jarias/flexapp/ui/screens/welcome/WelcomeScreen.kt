@@ -9,9 +9,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import co.jarias.flexapp.ui.navigation.NavigationEvent
 
 @Composable
-fun WelcomeScreen(onGetStarted: () -> Unit) {
+fun WelcomeScreen(
+    onNavigate: (NavigationEvent) -> Unit,
+    onEvent: (WelcomeScreenEvents) -> Unit,
+    state: WelcomeScreenState
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -21,7 +26,6 @@ fun WelcomeScreen(onGetStarted: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Title
         Text(
             text = "FlexApp",
             style = MaterialTheme.typography.displayLarge,
@@ -30,7 +34,6 @@ fun WelcomeScreen(onGetStarted: () -> Unit) {
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        // Subtitle
         Text(
             text = "Your Multi-Purpose Gaming Companion",
             style = MaterialTheme.typography.titleLarge,
@@ -39,7 +42,6 @@ fun WelcomeScreen(onGetStarted: () -> Unit) {
             textAlign = TextAlign.Center
         )
 
-        // Description
         Text(
             text = "Experience the joy of classic games with modern technology. Bingo, and more games to come!",
             style = MaterialTheme.typography.bodyLarge,
@@ -50,21 +52,28 @@ fun WelcomeScreen(onGetStarted: () -> Unit) {
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // Get Started Button
         Button(
-            onClick = onGetStarted,
+            onClick = { onEvent(WelcomeScreenEvents.OnGetStartedClicked) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.secondary
-            )
+            ),
+            enabled = !state.isLoading
         ) {
-            Text(
-                text = "Get Started",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
+            if (state.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = MaterialTheme.colorScheme.onSecondary
+                )
+            } else {
+                Text(
+                    text = "Get Started",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
