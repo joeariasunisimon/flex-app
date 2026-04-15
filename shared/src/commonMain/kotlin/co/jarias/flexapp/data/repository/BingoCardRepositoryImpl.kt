@@ -4,7 +4,7 @@ import co.jarias.flexapp.data.local.Database
 import co.jarias.flexapp.domain.BingoCard
 import co.jarias.flexapp.shared.database.BingoCard as DbBingoCard
 
-class BingoCardRepositoryImpl(private val database: Database) : BingoCardRepository {
+class BingoCardRepositoryImpl(database: Database) : BingoCardRepository {
 
     private val queries = database.database.bingoDatabaseQueries
 

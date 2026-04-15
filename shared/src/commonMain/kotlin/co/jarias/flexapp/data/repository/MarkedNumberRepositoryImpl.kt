@@ -4,7 +4,7 @@ import co.jarias.flexapp.data.local.Database
 import co.jarias.flexapp.domain.MarkedNumber
 import co.jarias.flexapp.shared.database.MarkedNumber as DbMarkedNumber
 
-class MarkedNumberRepositoryImpl(private val database: Database) : MarkedNumberRepository {
+class MarkedNumberRepositoryImpl(database: Database) : MarkedNumberRepository {
 
     private val queries = database.database.bingoDatabaseQueries
 

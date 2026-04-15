@@ -5,7 +5,7 @@ import co.jarias.flexapp.domain.Game
 import co.jarias.flexapp.domain.WinCondition
 import co.jarias.flexapp.shared.database.Game as DbGame
 
-class GameRepositoryImpl(private val database: Database) : GameRepository {
+class GameRepositoryImpl(database: Database) : GameRepository {
 
     private val queries = database.database.bingoDatabaseQueries
 
