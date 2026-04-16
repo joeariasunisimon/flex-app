@@ -1,5 +1,6 @@
 package co.jarias.flexapp.ui.screens.bingo.game_list
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,11 +10,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.material3.Icon
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import co.jarias.flexapp.R
 import co.jarias.flexapp.domain.Game
+import co.jarias.flexapp.domain.WinCondition
 import co.jarias.flexapp.ui.navigation.NavigationEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -29,7 +35,10 @@ fun BingoGameListScreen(
                 title = { Text("Your Bingo Games") },
                 navigationIcon = {
                     IconButton(onClick = { onNavigate(NavigationEvent.OnNavigateUp) }) {
-                        Text("←", fontSize = 20.sp)
+                        Icon(
+                            painter = painterResource(id = R.drawable.outline_arrow_back),
+                            contentDescription = "Back"
+                        )
                     }
                 },
                 actions = {
@@ -51,6 +60,7 @@ fun BingoGameListScreen(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
+
                 state.errorMessage != null -> {
                     Column(
                         modifier = Modifier
@@ -70,6 +80,7 @@ fun BingoGameListScreen(
                         }
                     }
                 }
+
                 state.games.isEmpty() -> {
                     Column(
                         modifier = Modifier
@@ -91,11 +102,12 @@ fun BingoGameListScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.height(24.dp))
-                        Button(onClick = { onEvent(BingoGameListScreenEvents.OnCreateNewGameClicked) }) {
+                        Button(onClick = { onNavigate(NavigationEvent.NavigateToBingoGameSetup) }) {
                             Text("Create Game")
                         }
                     }
                 }
+
                 else -> {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
@@ -106,10 +118,22 @@ fun BingoGameListScreen(
                             GameListItem(
                                 game = game,
                                 onPlay = {
-                                    game.id?.let { onNavigate(NavigationEvent.NavigateToBingoGamePlay(it)) }
+                                    game.id?.let {
+                                        onNavigate(
+                                            NavigationEvent.NavigateToBingoGamePlay(
+                                                it
+                                            )
+                                        )
+                                    }
                                 },
                                 onRestart = {
-                                    game.id?.let { onEvent(BingoGameListScreenEvents.OnRestartGame(it)) }
+                                    game.id?.let {
+                                        onEvent(
+                                            BingoGameListScreenEvents.OnRestartGame(
+                                                it
+                                            )
+                                        )
+                                    }
                                 },
                                 onDelete = {
                                     game.id?.let { onEvent(BingoGameListScreenEvents.OnDeleteGame(it)) }
@@ -134,14 +158,13 @@ private fun GameListItem(
 
     if (showDeleteDialog) {
         AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
+            onDismissRequest = { },
             title = { Text("Delete Game?") },
             text = { Text("Are you sure you want to delete \"${game.name}\"? This cannot be undone.") },
             confirmButton = {
                 Button(
                     onClick = {
                         onDelete()
-                        showDeleteDialog = false
                     }
                 ) {
                     Text("Delete")
@@ -219,7 +242,13 @@ private fun GameListItem(
                         .height(36.dp),
                     contentPadding = PaddingValues(4.dp)
                 ) {
-                    Text("↻ Restart", fontSize = 12.sp)
+                    Image(
+                        painter = painterResource(id = R.drawable.outline_change_circle_24),
+                        contentDescription = "Restart",
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Restart", fontSize = 12.sp)
                 }
 
                 OutlinedButton(
@@ -232,9 +261,61 @@ private fun GameListItem(
                         contentColor = MaterialTheme.colorScheme.error
                     )
                 ) {
-                    Text("🗑 Delete", fontSize = 12.sp)
+                    Image(
+                        painter = painterResource(id = R.drawable.outline_delete_24),
+                        contentDescription = "Delete",
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Delete", fontSize = 12.sp)
                 }
             }
         }
     }
+}
+
+@Preview(
+    showBackground = true,
+    showSystemUi = true,
+    name = "Empty State"
+)
+@Composable
+fun BingoGameListScreenPreviewEmpty() {
+    BingoGameListScreen(
+        onNavigate = {},
+        onEvent = {},
+        state = BingoGameListScreenState(isLoading = false)
+    )
+}
+
+@Preview(
+    showBackground = true,
+    showSystemUi = true,
+    name = "With Games"
+)
+@Composable
+fun BingoGameListScreenPreviewGames() {
+    BingoGameListScreen(
+        onNavigate = {},
+        onEvent = {},
+        state = BingoGameListScreenState(
+            isLoading = false,
+            games = listOf(
+                Game(
+                    id = 1,
+                    name = "Family Bingo Night",
+                    targetFigure = WinCondition.FULL_CARD,
+                    isCompleted = false,
+                    createdAt = "2024-06-01T12:00:00Z"
+                ),
+                Game(
+                    id = 2,
+                    name = "Office Bingo Challenge",
+                    targetFigure = WinCondition.B,
+                    isCompleted = true,
+                    createdAt = "2024-05-28T18:30:00Z"
+                )
+            )
+        )
+    )
 }

@@ -143,7 +143,6 @@ fun AppNavigation(navController: NavHostController) {
             val state by viewModel.state.collectAsState()
 
             BingoGamePlayScreen(
-                gameId = gameId,
                 onNavigate = { event -> handleNavigationEvent(navController, event) },
                 onEvent = { event -> viewModel.onEvent(event) },
                 state = state

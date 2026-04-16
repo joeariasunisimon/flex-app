@@ -25,7 +25,7 @@ fun handleNavigationEvent(
 
         is NavigationEvent.NavigateToBingoGameList -> {
             navController.navigate(AppDestinations.BINGO_GAME_LIST) {
-                popUpTo(AppDestinations.TOOL_SELECTION) { inclusive = true }
+                popUpTo(AppDestinations.TOOL_SELECTION)
             }
         }
 

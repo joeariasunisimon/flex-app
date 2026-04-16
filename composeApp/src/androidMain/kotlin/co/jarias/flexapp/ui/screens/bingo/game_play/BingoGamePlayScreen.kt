@@ -12,14 +12,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.material3.Icon
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.Dialog
+import co.jarias.flexapp.R
 import co.jarias.flexapp.domain.BingoCard
 import co.jarias.flexapp.domain.BingoCell
+import co.jarias.flexapp.domain.Game
 import co.jarias.flexapp.domain.GameState
 import co.jarias.flexapp.domain.WinCondition
 import co.jarias.flexapp.ui.navigation.NavigationEvent
@@ -27,7 +32,6 @@ import co.jarias.flexapp.ui.navigation.NavigationEvent
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BingoGamePlayScreen(
-    gameId: Long,
     onNavigate: (NavigationEvent) -> Unit,
     onEvent: (BingoGamePlayScreenEvents) -> Unit,
     state: BingoGamePlayScreenState
@@ -38,7 +42,7 @@ fun BingoGamePlayScreen(
                 title = { Text(state.gameState?.game?.name ?: "Bingo Game") },
                 navigationIcon = {
                     IconButton(onClick = { onNavigate(NavigationEvent.OnNavigateUp) }) {
-                        Text("←", fontSize = 20.sp)
+                        Icon(painter = painterResource(id = R.drawable.outline_arrow_back), contentDescription = "Back")
                     }
                 }
             )
@@ -412,4 +416,109 @@ private fun WinDialog(
             }
         }
     }
+}
+
+@Preview(showBackground = true, showSystemUi = true, name = "Loading")
+@Composable
+fun BingoGamePlayScreenPreviewLoading() {
+    BingoGamePlayScreen(
+        onNavigate = {},
+        onEvent = {},
+        state = BingoGamePlayScreenState(isLoading = true)
+    )
+}
+
+@Preview(showBackground = true, showSystemUi = true, name = "Error")
+@Composable
+fun BingoGamePlayScreenPreviewError() {
+    BingoGamePlayScreen(
+        onNavigate = {},
+        onEvent = {},
+        state = BingoGamePlayScreenState(
+            isLoading = false,
+            errorMessage = "Failed to load game. Please try again."
+        )
+    )
+}
+
+@Preview(showBackground = true, showSystemUi = true, name = "Playing")
+@Composable
+fun BingoGamePlayScreenPreviewPlaying() {
+    val game = Game(
+        id = 1,
+        name = "Family Bingo Night",
+        targetFigure = WinCondition.B,
+        createdAt = "2024-06-01T12:00:00Z",
+        isCompleted = false
+    )
+    val card = BingoCard(
+        id = 1,
+        gameId = 1,
+        grid = List(5) { row ->
+            List(5) { col ->
+                val number = if (row == 2 && col == 2) null else (row * 15 + col + 1)
+                BingoCell(
+                    number = number,
+                    isMarked = false,
+                    isFree = (row == 2 && col == 2)
+                )
+            }
+        }
+    )
+    val markedNumbers = setOf(3, 7, 12, 18)
+    val gameState = GameState(
+        game = game,
+        card = card,
+        markedNumbers = markedNumbers,
+        isWon = false
+    )
+    BingoGamePlayScreen(
+        onNavigate = {},
+        onEvent = {},
+        state = BingoGamePlayScreenState(
+            isLoading = false,
+            gameState = gameState
+        )
+    )
+}
+
+@Preview(showBackground = true, showSystemUi = true, name = "Win Dialog")
+@Composable
+fun BingoGamePlayScreenPreviewWinDialog() {
+    val game = Game(
+        id = 1,
+        name = "Family Bingo Night",
+        targetFigure = WinCondition.FULL_CARD,
+        createdAt = "2024-06-01T12:00:00Z",
+        isCompleted = true
+    )
+    val card = BingoCard(
+        id = 1,
+        gameId = 1,
+        grid = List(5) { row ->
+            List(5) { col ->
+                BingoCell(
+                    number = if (row == 2 && col == 2) null else (row * 15 + col + 1),
+                    isMarked = true,
+                    isFree = (row == 2 && col == 2)
+                )
+            }
+        }
+    )
+    val markedNumbers = (1..75).toSet()
+    val gameState = GameState(
+        game = game,
+        card = card,
+        markedNumbers = markedNumbers,
+        isWon = true
+    )
+    BingoGamePlayScreen(
+        onNavigate = {},
+        onEvent = {},
+        state = BingoGamePlayScreenState(
+            isLoading = false,
+            gameState = gameState,
+            showWinDialog = true
+        )
+    )
 }

@@ -11,10 +11,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import co.jarias.flexapp.R
 import co.jarias.flexapp.domain.WinCondition
 import co.jarias.flexapp.ui.navigation.NavigationEvent
 
@@ -43,7 +45,7 @@ fun BingoFigureSelectionScreen(
             title = { Text("Select Win Figure") },
             navigationIcon = {
                 IconButton(onClick = { onNavigate(NavigationEvent.OnNavigateUp) }) {
-                    Text("←", style = MaterialTheme.typography.headlineSmall)
+                    Icon(painter = painterResource(id = R.drawable.outline_arrow_back), contentDescription = "Back")
                 }
             }
         )

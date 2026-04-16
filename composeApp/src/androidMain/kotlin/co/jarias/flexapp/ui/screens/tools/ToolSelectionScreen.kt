@@ -10,7 +10,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import co.jarias.flexapp.ui.navigation.NavigationEvent
+import co.jarias.flexapp.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -19,49 +23,49 @@ fun ToolSelectionScreen(
     onEvent: (ToolSelectionScreenEvents) -> Unit,
     state: ToolSelectionScreenState
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-TopAppBar(
-                title = { Text("Select a Game") },
-                navigationIcon = {
-                    IconButton(onClick = { onNavigate(NavigationEvent.OnNavigateUp) }) {
-                        Text("←", style = MaterialTheme.typography.headlineSmall)
-                    }
-                }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Select a Game") }
             )
-
+        }
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
-            verticalArrangement = Arrangement.Top
+                .padding(padding)
+                .background(MaterialTheme.colorScheme.background)
         ) {
-            Text(
-                text = "Choose a game to play",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 24.dp)
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.Top
+            ) {
+                Text(
+                    text = "Choose a game to play",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 24.dp)
+                )
 
-            ToolCard(
-                title = "Bingo",
-                description = "Play the classic bingo game with customizable cards and target figures",
-                icon = "🎲",
-                onClick = { onNavigate(NavigationEvent.NavigateToBingoGameList) }
-            )
+                ToolCard(
+                    title = "Bingo",
+                    description = "Play the classic bingo game with customizable cards and target figures",
+                    iconRes = R.drawable.bingo_icon,
+                    onClick = { onNavigate(NavigationEvent.NavigateToBingoGameList) }
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            ToolCard(
-                title = "Coming Soon...",
-                description = "More exciting games will be available soon!",
-                icon = "🚀",
-                onClick = { },
-                enabled = false
-            )
+                ToolCard(
+                    title = "Coming Soon...",
+                    description = "More exciting games will be available soon!",
+                    iconRes = R.drawable.rocket_icon,
+                    onClick = { },
+                    enabled = false
+                )
+            }
         }
     }
 }
@@ -70,7 +74,7 @@ TopAppBar(
 private fun ToolCard(
     title: String,
     description: String,
-    icon: String,
+    iconRes: Int,
     onClick: () -> Unit,
     enabled: Boolean = true
 ) {
@@ -79,7 +83,9 @@ private fun ToolCard(
             .fillMaxWidth()
             .clickable(enabled = enabled) { onClick() },
         shape = RoundedCornerShape(12.dp),
-        color = if (enabled) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        color = if (enabled) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surfaceVariant.copy(
+            alpha = 0.5f
+        )
     ) {
         Row(
             modifier = Modifier
@@ -88,10 +94,12 @@ private fun ToolCard(
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = icon,
-                style = MaterialTheme.typography.displaySmall,
-                modifier = Modifier.padding(end = 16.dp)
+            Image(
+                painter = painterResource(id = iconRes),
+                contentDescription = title,
+                modifier = Modifier
+                    .size(48.dp)
+                    .padding(end = 16.dp)
             )
 
             Column(
@@ -110,4 +118,17 @@ private fun ToolCard(
             }
         }
     }
+}
+
+@Preview(
+    showBackground = true,
+    showSystemUi = true,
+)
+@Composable
+fun ToolSelectionScreenPreview() {
+    ToolSelectionScreen(
+        onNavigate = {},
+        onEvent = {},
+        state = ToolSelectionScreenState()
+    )
 }

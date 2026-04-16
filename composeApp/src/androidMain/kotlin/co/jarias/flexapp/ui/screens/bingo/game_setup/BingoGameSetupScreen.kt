@@ -8,8 +8,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+import co.jarias.flexapp.R
 import co.jarias.flexapp.ui.navigation.NavigationEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -34,7 +37,7 @@ fun BingoGameSetupScreen(
             title = { Text("Create New Game") },
             navigationIcon = {
                 IconButton(onClick = { onNavigate(NavigationEvent.OnNavigateUp) }) {
-                    Text("←", style = MaterialTheme.typography.headlineSmall)
+                    Icon(painter = painterResource(id = R.drawable.outline_arrow_back), contentDescription = "Back")
                 }
             }
         )
@@ -104,4 +107,47 @@ fun BingoGameSetupScreen(
             }
         }
     }
+}
+
+@Preview(showBackground = true, name = "Initial State")
+@Composable
+fun BingoGameSetupScreenPreviewInitial() {
+    BingoGameSetupScreen(
+        onNavigate = {},
+        onEvent = {},
+        state = BingoGameSetupScreenState()
+    )
+}
+
+@Preview(showBackground = true, name = "With Game Name")
+@Composable
+fun BingoGameSetupScreenPreviewWithName() {
+    BingoGameSetupScreen(
+        onNavigate = {},
+        onEvent = {},
+        state = BingoGameSetupScreenState(gameName = "Family Bingo Night")
+    )
+}
+
+@Preview(showBackground = true, name = "Loading")
+@Composable
+fun BingoGameSetupScreenPreviewLoading() {
+    BingoGameSetupScreen(
+        onNavigate = {},
+        onEvent = {},
+        state = BingoGameSetupScreenState(gameName = "Test Game", isLoading = true)
+    )
+}
+
+@Preview(showBackground = true, name = "Error")
+@Composable
+fun BingoGameSetupScreenPreviewError() {
+    BingoGameSetupScreen(
+        onNavigate = {},
+        onEvent = {},
+        state = BingoGameSetupScreenState(
+            gameName = "Test Game",
+            errorMessage = "Failed to create game. Please try again."
+        )
+    )
 }
