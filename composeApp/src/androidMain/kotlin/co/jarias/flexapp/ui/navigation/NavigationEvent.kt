@@ -1,5 +1,7 @@
 package co.jarias.flexapp.ui.navigation
 
+import co.jarias.flexapp.data.local.ToolType
+
 sealed class NavigationEvent {
     data object OnNavigateUp : NavigationEvent()
     data object NavigateToToolSelection : NavigationEvent()
@@ -8,6 +10,7 @@ sealed class NavigationEvent {
     data class NavigateToBingoCardSetup(val gameId: Long) : NavigationEvent()
     data class NavigateToBingoFigureSelection(val gameId: Long) : NavigationEvent()
     data class NavigateToBingoGamePlay(val gameId: Long) : NavigationEvent()
+    data class NavigateToTool(val toolType: ToolType) : NavigationEvent()
 }
 
 fun handleNavigationEvent(
@@ -48,6 +51,16 @@ fun handleNavigationEvent(
         is NavigationEvent.NavigateToBingoGamePlay -> {
             navController.navigate(AppDestinations.bingoGamePlayRoute(event.gameId)) {
                 popUpTo(AppDestinations.BINGO_GAME_LIST)
+            }
+        }
+
+        is NavigationEvent.NavigateToTool -> {
+            val destination = when (event.toolType) {
+                ToolType.BINGO -> AppDestinations.BINGO_GAME_LIST
+                ToolType.SUDOKU -> AppDestinations.TOOL_SELECTION
+            }
+            navController.navigate(destination) {
+                popUpTo(AppDestinations.WELCOME) { inclusive = true }
             }
         }
     }

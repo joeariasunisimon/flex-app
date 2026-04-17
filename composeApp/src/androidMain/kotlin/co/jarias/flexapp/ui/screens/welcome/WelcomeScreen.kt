@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -14,11 +15,18 @@ import co.jarias.flexapp.ui.navigation.NavigationEvent
 @Composable
 fun WelcomeScreen(
     onNavigate: (NavigationEvent) -> Unit,
-    onEvent: (WelcomeScreenEvents) -> Unit,
-    state: WelcomeScreenState
+    onEvent: (WelcomeScreenEvents, (NavigationEvent) -> Unit) -> Unit,
+    state: WelcomeScreenState,
+    modifier: Modifier = Modifier
 ) {
+    LaunchedEffect(state.lastTool, state.isLoading) {
+        if (!state.isLoading && state.lastTool != null) {
+            onEvent(WelcomeScreenEvents.OnGetStartedClicked, onNavigate)
+        }
+    }
+
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.primary)
             .safeContentPadding()
@@ -53,7 +61,9 @@ fun WelcomeScreen(
         Spacer(modifier = Modifier.weight(1f))
 
         Button(
-            onClick = { onNavigate(NavigationEvent.NavigateToToolSelection) },
+            onClick = {
+                onEvent(WelcomeScreenEvents.OnGetStartedClicked, onNavigate)
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),

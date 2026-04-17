@@ -1,6 +1,7 @@
 package co.jarias.flexapp.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -12,6 +13,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import co.jarias.flexapp.data.local.Database
 import co.jarias.flexapp.data.local.DatabaseDriverFactory
+import co.jarias.flexapp.data.local.PreferencesManager
 import co.jarias.flexapp.data.repository.BingoCardRepositoryImpl
 import co.jarias.flexapp.data.repository.GameRepositoryImpl
 import co.jarias.flexapp.data.repository.MarkedNumberRepositoryImpl
@@ -34,6 +36,7 @@ import co.jarias.flexapp.ui.screens.welcome.WelcomeScreenViewModel
 fun AppNavigation(navController: NavHostController) {
     val context = LocalContext.current
 
+    val preferencesManager = remember { PreferencesManager(context) }
     val gameRepository = remember {
         GameRepositoryImpl(Database(DatabaseDriverFactory(context)))
     }
@@ -49,18 +52,19 @@ fun AppNavigation(navController: NavHostController) {
         startDestination = AppDestinations.WELCOME
     ) {
         composable(AppDestinations.WELCOME) {
-            val viewModel = remember { WelcomeScreenViewModel() }
+            val viewModel = remember { WelcomeScreenViewModel(preferencesManager) }
             val state by viewModel.state.collectAsState()
 
             WelcomeScreen(
                 onNavigate = { event -> handleNavigationEvent(navController, event) },
-                onEvent = { },
-                state = state
+                onEvent = { event, nav -> viewModel.onEvent(event, nav) },
+                state = state,
+                modifier = Modifier
             )
         }
 
         composable(AppDestinations.TOOL_SELECTION) {
-            val viewModel = remember { ToolSelectionScreenViewModel() }
+            val viewModel = remember { ToolSelectionScreenViewModel(preferencesManager) }
             val state by viewModel.state.collectAsState()
 
             ToolSelectionScreen(
