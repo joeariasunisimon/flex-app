@@ -16,6 +16,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
 import co.jarias.flexapp.R
 import co.jarias.flexapp.ui.navigation.NavigationEvent
 
@@ -178,5 +179,89 @@ fun BingoCardSetupScreen(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Valid Numbers - Column B")
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BingoCardSetupScreenPreviewValidNumbers() {
+    MaterialTheme {
+        BingoCardSetupScreen(
+            gameId = 1,
+            onNavigate = {},
+            onEvent = {},
+            state = BingoCardSetupScreenState(
+                gameId = 1,
+                cardNumbers = listOf(
+                    listOf("5", "", "", "", ""),
+                    listOf("12", "", "", "", ""),
+                    listOf("15", "", "", "", ""),
+                    listOf("3", "", "", "", ""),
+                    listOf("9", "", "", "", "")
+                ),
+                currentColumn = 0,
+                isLoading = false,
+                isSaving = false,
+                errorMessage = null,
+                cardSaved = false
+            )
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Invalid Number - Column I")
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BingoCardSetupScreenPreviewInvalidNumber() {
+    MaterialTheme {
+        BingoCardSetupScreen(
+            gameId = 1,
+            onNavigate = {},
+            onEvent = {},
+            state = BingoCardSetupScreenState(
+                gameId = 1,
+                cardNumbers = listOf(
+                    listOf("5", "20", "", "", ""),
+                    listOf("12", "99", "", "", ""),
+                    listOf("15", "25", "", "", ""),
+                    listOf("3", "28", "", "", ""),
+                    listOf("9", "31", "", "", "")
+                ),
+                currentColumn = 1,
+                isLoading = false,
+                isSaving = false,
+                errorMessage = "Number must be between 16 and 30",
+                cardSaved = false
+            )
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Duplicate Number - Column G")
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BingoCardSetupScreenPreviewDuplicateNumber() {
+    MaterialTheme {
+        BingoCardSetupScreen(
+            gameId = 1,
+            onNavigate = {},
+            onEvent = {},
+            state = BingoCardSetupScreenState(
+                gameId = 1,
+                cardNumbers = listOf(
+                    listOf("5", "20", "35", "50", "61"),
+                    listOf("12", "25", "38", "55", "68"),
+                    listOf("", "", "", "", ""),
+                    listOf("3", "28", "44", "58", "72"),
+                    listOf("9", "30", "45", "60", "75")
+                ),
+                currentColumn = 2,
+                isLoading = false,
+                isSaving = false,
+                errorMessage = "Number 35 already exists in this column",
+                cardSaved = false
+            )
+        )
     }
 }
