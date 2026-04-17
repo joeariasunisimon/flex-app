@@ -5,5 +5,9 @@ import co.jarias.flexapp.domain.Game
 data class BingoGameListScreenState(
     val games: List<Game> = emptyList(),
     val isLoading: Boolean = true,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val pendingSetupGameIds: List<Long> = emptyList(),
+    val continueToCardSetup: Long? = null,
+    val continueToFigureSelection: Long? = null,
+    val continueToGamePlay: Long? = null
 )

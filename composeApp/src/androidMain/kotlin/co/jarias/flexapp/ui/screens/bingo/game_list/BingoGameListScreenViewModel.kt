@@ -2,6 +2,7 @@ package co.jarias.flexapp.ui.screens.bingo.game_list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import co.jarias.flexapp.data.local.PreferencesManager
 import co.jarias.flexapp.data.repository.BingoCardRepository
 import co.jarias.flexapp.data.repository.GameRepository
 import co.jarias.flexapp.data.repository.MarkedNumberRepository
@@ -18,7 +19,8 @@ import kotlinx.coroutines.withContext
 class BingoGameListScreenViewModel(
     private val gameRepository: GameRepository,
     private val bingoCardRepository: BingoCardRepository,
-    private val markedNumberRepository: MarkedNumberRepository
+    private val markedNumberRepository: MarkedNumberRepository,
+    private val preferencesManager: PreferencesManager? = null
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BingoGameListScreenState())
@@ -45,6 +47,9 @@ class BingoGameListScreenViewModel(
             is BingoGameListScreenEvents.OnRetryClicked -> {
                 loadGames()
             }
+            is BingoGameListScreenEvents.OnContinueSetup -> {
+                continueSetup(event.gameId)
+            }
         }
     }
 
@@ -54,10 +59,12 @@ class BingoGameListScreenViewModel(
                 _state.value = _state.value.copy(isLoading = true, errorMessage = null)
 
                 val games = getAllGamesUseCase()
+                val pendingIds = preferencesManager?.getPendingSetupGameIds() ?: emptyList()
 
                 _state.value = _state.value.copy(
                     games = games,
-                    isLoading = false
+                    isLoading = false,
+                    pendingSetupGameIds = pendingIds
                 )
             } catch (e: Exception) {
                 _state.value = _state.value.copy(
@@ -68,12 +75,39 @@ class BingoGameListScreenViewModel(
         }
     }
 
+    private fun continueSetup(gameId: Long) {
+        viewModelScope.launch {
+            try {
+                val cards = withContext(Dispatchers.IO) {
+                    bingoCardRepository.getCardsByGameId(gameId)
+                }
+
+                if (cards.isEmpty()) {
+                    _state.value = _state.value.copy(continueToCardSetup = gameId)
+                } else {
+                    val game = withContext(Dispatchers.IO) {
+                        gameRepository.getGameById(gameId)
+                    }
+                    if (game?.targetFigure == null) {
+                        _state.value = _state.value.copy(continueToFigureSelection = gameId)
+                    } else {
+                        preferencesManager?.removePendingSetupGameId(gameId)
+                        _state.value = _state.value.copy(continueToGamePlay = gameId)
+                    }
+                }
+            } catch (e: Exception) {
+                _state.value = _state.value.copy(errorMessage = "Failed to continue setup: ${e.message}")
+            }
+        }
+    }
+
     private fun restartGame(gameId: Long) {
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
                     restartGameUseCase(gameId)
                 }
+                preferencesManager?.removePendingSetupGameId(gameId)
                 loadGames()
             } catch (e: Exception) {
                 _state.value = _state.value.copy(
@@ -89,6 +123,7 @@ class BingoGameListScreenViewModel(
                 withContext(Dispatchers.IO) {
                     dropGameUseCase(gameId)
                 }
+                preferencesManager?.removePendingSetupGameId(gameId)
                 loadGames()
             } catch (e: Exception) {
                 _state.value = _state.value.copy(
@@ -96,5 +131,13 @@ class BingoGameListScreenViewModel(
                 )
             }
         }
+    }
+
+    fun clearNavigationState() {
+        _state.value = _state.value.copy(
+            continueToCardSetup = null,
+            continueToFigureSelection = null,
+            continueToGamePlay = null
+        )
     }
 }

@@ -6,4 +6,5 @@ sealed class BingoGameListScreenEvents {
     data class OnRestartGame(val gameId: Long) : BingoGameListScreenEvents()
     data class OnDeleteGame(val gameId: Long) : BingoGameListScreenEvents()
     data object OnRetryClicked : BingoGameListScreenEvents()
+    data class OnContinueSetup(val gameId: Long) : BingoGameListScreenEvents()
 }

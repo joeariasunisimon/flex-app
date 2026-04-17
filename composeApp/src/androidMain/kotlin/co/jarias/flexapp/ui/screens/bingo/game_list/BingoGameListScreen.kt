@@ -49,16 +49,19 @@ fun BingoGameListScreen(
             )
         }
     ) { padding ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
             when {
                 state.isLoading -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center)
-                    )
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
 
                 state.errorMessage != null -> {
@@ -117,6 +120,12 @@ fun BingoGameListScreen(
                         items(state.games) { game ->
                             GameListItem(
                                 game = game,
+                                pendingSetupGameIds = state.pendingSetupGameIds,
+                                onContinueSetup = {
+                                    game.id?.let {
+                                        onEvent(BingoGameListScreenEvents.OnContinueSetup(it))
+                                    }
+                                },
                                 onPlay = {
                                     game.id?.let {
                                         onNavigate(
@@ -150,10 +159,14 @@ fun BingoGameListScreen(
 @Composable
 private fun GameListItem(
     game: Game,
+    pendingSetupGameIds: List<Long>,
+    onContinueSetup: () -> Unit,
     onPlay: () -> Unit,
     onRestart: () -> Unit,
     onDelete: () -> Unit
 ) {
+    val isPendingSetup = pendingSetupGameIds.contains(game.id)
+    val isReadyToPlay = !game.isCompleted && game.targetFigure != null
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     if (showDeleteDialog) {
@@ -181,7 +194,7 @@ private fun GameListItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onPlay),
+            .clickable(enabled = !isPendingSetup, onClick = if (isPendingSetup) onContinueSetup else onPlay),
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -203,9 +216,9 @@ private fun GameListItem(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Target: ${game.targetFigure?.displayName ?: "Not set"}",
+                        text = if (isPendingSetup) "Setup incomplete" else "Target: ${game.targetFigure?.displayName ?: "Not set"}",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
+                        color = if (isPendingSetup) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
                     )
                 }
                 if (game.isCompleted) {
@@ -235,20 +248,32 @@ private fun GameListItem(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                OutlinedButton(
-                    onClick = onRestart,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(36.dp),
-                    contentPadding = PaddingValues(4.dp)
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.outline_change_circle_24),
-                        contentDescription = "Restart",
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Restart", fontSize = 12.sp)
+                if (isPendingSetup) {
+                    Button(
+                        onClick = onContinueSetup,
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(36.dp),
+                        contentPadding = PaddingValues(4.dp)
+                    ) {
+                        Text("Continue Setup", fontSize = 12.sp)
+                    }
+                } else if (isReadyToPlay) {
+                    OutlinedButton(
+                        onClick = onRestart,
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(36.dp),
+                        contentPadding = PaddingValues(4.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.outline_change_circle_24),
+                            contentDescription = "Restart",
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Restart", fontSize = 12.sp)
+                    }
                 }
 
                 OutlinedButton(

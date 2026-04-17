@@ -2,6 +2,7 @@ package co.jarias.flexapp.ui.screens.bingo.game_setup
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import co.jarias.flexapp.data.local.PreferencesManager
 import co.jarias.flexapp.data.repository.GameRepository
 import co.jarias.flexapp.domain.usecase.CreateGameUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -10,7 +11,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class BingoGameSetupScreenViewModel(
-    private val gameRepository: GameRepository
+    private val gameRepository: GameRepository,
+    private val preferencesManager: PreferencesManager? = null
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BingoGameSetupScreenState())
@@ -45,6 +47,7 @@ class BingoGameSetupScreenViewModel(
                 val game = createGameUseCase(currentState.gameName)
 
                 game.id?.let { gameId ->
+                    preferencesManager?.addPendingSetupGameId(gameId)
                     _state.value = currentState.copy(
                         isLoading = false,
                         gameCreated = true,

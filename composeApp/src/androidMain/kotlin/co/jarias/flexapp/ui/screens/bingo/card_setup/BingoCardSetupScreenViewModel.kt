@@ -2,6 +2,8 @@ package co.jarias.flexapp.ui.screens.bingo.card_setup
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import co.jarias.flexapp.data.local.CardSetupState
+import co.jarias.flexapp.data.local.PreferencesManager
 import co.jarias.flexapp.data.repository.BingoCardRepository
 import co.jarias.flexapp.domain.BingoCard
 import co.jarias.flexapp.domain.BingoCell
@@ -14,6 +16,7 @@ import kotlinx.coroutines.withContext
 
 class BingoCardSetupScreenViewModel(
     private val bingoCardRepository: BingoCardRepository,
+    private val preferencesManager: PreferencesManager? = null,
     private val gameId: Long = 0
 ) : ViewModel() {
 
@@ -41,6 +44,36 @@ class BingoCardSetupScreenViewModel(
         return true
     }
 
+    private fun loadCardSetupStateFromPreferences() {
+        viewModelScope.launch {
+            val savedState = preferencesManager?.getCardSetupState(gameId)
+            savedState?.let {
+                _state.value = _state.value.copy(
+                    currentColumn = it.currentColumn,
+                    cardNumbers = it.cardNumbers
+                )
+            }
+        }
+    }
+
+    private fun saveCardSetupStateToPreferences() {
+        viewModelScope.launch {
+            preferencesManager?.setCardSetupState(
+                gameId,
+                CardSetupState(
+                    currentColumn = _state.value.currentColumn,
+                    cardNumbers = _state.value.cardNumbers
+                )
+            )
+        }
+    }
+
+    private fun clearCardSetupStateInPreferences() {
+        viewModelScope.launch {
+            preferencesManager?.clearCardSetupState(gameId)
+        }
+    }
+
     fun loadGame(gameId: Long) {
         viewModelScope.launch {
             try {
@@ -62,6 +95,7 @@ class BingoCardSetupScreenViewModel(
                     )
                     findFirstIncompleteColumn()
                 } else {
+                    loadCardSetupStateFromPreferences()
                     _state.value = _state.value.copy(isLoading = false)
                 }
             } catch (e: Exception) {
@@ -101,6 +135,7 @@ class BingoCardSetupScreenViewModel(
             cardNumbers = newCardNumbers,
             errorMessage = null
         )
+        saveCardSetupStateToPreferences()
     }
 
     private fun nextColumn() {
@@ -110,6 +145,8 @@ class BingoCardSetupScreenViewModel(
             )
             return
         }
+
+        saveCardSetupStateToPreferences()
 
         if (_state.value.currentColumn < 4) {
             _state.value = _state.value.copy(
@@ -122,6 +159,8 @@ class BingoCardSetupScreenViewModel(
     }
 
     private fun previousColumn() {
+        saveCardSetupStateToPreferences()
+
         if (_state.value.currentColumn > 0) {
             _state.value = _state.value.copy(
                 currentColumn = _state.value.currentColumn - 1,
@@ -160,6 +199,8 @@ class BingoCardSetupScreenViewModel(
                 withContext(Dispatchers.IO) {
                     bingoCardRepository.insertCard(card)
                 }
+
+                clearCardSetupStateInPreferences()
 
                 _state.value = currentState.copy(
                     isSaving = false,

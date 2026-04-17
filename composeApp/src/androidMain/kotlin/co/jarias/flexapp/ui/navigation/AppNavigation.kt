@@ -1,6 +1,7 @@
 package co.jarias.flexapp.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -75,8 +76,25 @@ fun AppNavigation(navController: NavHostController) {
         }
 
         composable(AppDestinations.BINGO_GAME_LIST) {
-            val viewModel = remember { BingoGameListScreenViewModel(gameRepository, bingoCardRepository, markedNumberRepository) }
+            val viewModel = remember { BingoGameListScreenViewModel(gameRepository, bingoCardRepository, markedNumberRepository, preferencesManager) }
             val state by viewModel.state.collectAsState()
+
+            LaunchedEffect(state.continueToCardSetup, state.continueToFigureSelection, state.continueToGamePlay) {
+                when {
+                    state.continueToCardSetup != null -> {
+                        navController.navigate(AppDestinations.bingoCardSetupRoute(state.continueToCardSetup!!))
+                        viewModel.clearNavigationState()
+                    }
+                    state.continueToFigureSelection != null -> {
+                        navController.navigate(AppDestinations.bingoFigureSelectionRoute(state.continueToFigureSelection!!))
+                        viewModel.clearNavigationState()
+                    }
+                    state.continueToGamePlay != null -> {
+                        navController.navigate(AppDestinations.bingoGamePlayRoute(state.continueToGamePlay!!))
+                        viewModel.clearNavigationState()
+                    }
+                }
+            }
 
             BingoGameListScreen(
                 onNavigate = { event -> handleNavigationEvent(navController, event) },
@@ -86,7 +104,7 @@ fun AppNavigation(navController: NavHostController) {
         }
 
         composable(AppDestinations.BINGO_GAME_SETUP) {
-            val viewModel = remember { BingoGameSetupScreenViewModel(gameRepository) }
+            val viewModel = remember { BingoGameSetupScreenViewModel(gameRepository, preferencesManager) }
             val state by viewModel.state.collectAsState()
 
             BingoGameSetupScreen(
@@ -103,7 +121,7 @@ fun AppNavigation(navController: NavHostController) {
             )
         ) { backStackEntry ->
             val gameId = backStackEntry.arguments?.getLong(NavArguments.GAME_ID) ?: 0L
-            val viewModel = remember { BingoCardSetupScreenViewModel(bingoCardRepository, gameId) }
+            val viewModel = remember { BingoCardSetupScreenViewModel(bingoCardRepository, preferencesManager, gameId) }
             val state by viewModel.state.collectAsState()
 
             BingoCardSetupScreen(
