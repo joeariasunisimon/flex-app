@@ -95,6 +95,17 @@ fun BingoCardSetupScreen(
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
 
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(
+                        onClick = { onEvent(BingoCardSetupScreenEvents.OnRandomFill) }
+                    ) {
+                        Text("Auto-fill")
+                    }
+                }
+
                 for (row in 0..4) {
                     if (row == 2 && state.currentColumn == 2) {
                         Box(

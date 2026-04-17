@@ -7,7 +7,30 @@ import co.jarias.flexapp.domain.BingoCard
 import co.jarias.flexapp.domain.GameState
 import co.jarias.flexapp.domain.MarkedNumber
 import co.jarias.flexapp.domain.WinCondition
+import kotlin.random.Random
 import kotlin.time.Clock
+
+class GenerateRandomNumbersUseCase {
+    private val columnRanges = listOf(1..15, 16..30, 31..45, 46..60, 61..75)
+
+    operator fun invoke(columnIndex: Int): Set<Int> {
+        val range = columnRanges.getOrElse(columnIndex) { 1..15 }
+        return generateRandomNumbers(range, columnIndex == 2)
+    }
+
+    private fun generateRandomNumbers(range: IntRange, isNColumn: Boolean): Set<Int> {
+        val count = if (isNColumn) 4 else 5
+        return Random.nextInt(0, Int.MAX_VALUE)
+            .let { seed ->
+                val random = Random(seed)
+                buildSet {
+                    while (size < count) {
+                        add(random.nextInt(range.first, range.last + 1))
+                    }
+                }
+            }
+    }
+}
 
 class GenerateBingoCardUseCase(private val bingoCardRepository: BingoCardRepository) {
     suspend operator fun invoke(gameId: Long): BingoCard {

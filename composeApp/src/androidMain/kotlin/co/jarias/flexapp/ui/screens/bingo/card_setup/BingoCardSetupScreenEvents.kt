@@ -5,4 +5,5 @@ sealed class BingoCardSetupScreenEvents {
     data object OnNextColumn : BingoCardSetupScreenEvents()
     data object OnPreviousColumn : BingoCardSetupScreenEvents()
     data object OnSaveCard : BingoCardSetupScreenEvents()
+    data object OnRandomFill : BingoCardSetupScreenEvents()
 }

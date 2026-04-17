@@ -7,6 +7,7 @@ import co.jarias.flexapp.data.local.PreferencesManager
 import co.jarias.flexapp.data.repository.BingoCardRepository
 import co.jarias.flexapp.domain.BingoCard
 import co.jarias.flexapp.domain.BingoCell
+import co.jarias.flexapp.domain.usecase.GenerateRandomNumbersUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +23,8 @@ class BingoCardSetupScreenViewModel(
 
     private val _state = MutableStateFlow(BingoCardSetupScreenState())
     val state: StateFlow<BingoCardSetupScreenState> = _state.asStateFlow()
+
+    private val generateRandomNumbersUseCase = GenerateRandomNumbersUseCase()
 
     init {
         if (gameId != 0L) {
@@ -122,7 +125,35 @@ class BingoCardSetupScreenViewModel(
             is BingoCardSetupScreenEvents.OnNextColumn -> nextColumn()
             is BingoCardSetupScreenEvents.OnPreviousColumn -> previousColumn()
             is BingoCardSetupScreenEvents.OnSaveCard -> saveCard()
+            is BingoCardSetupScreenEvents.OnRandomFill -> randomFillCurrentColumn()
         }
+    }
+
+    private fun randomFillCurrentColumn() {
+        val currentColumn = _state.value.currentColumn
+        val randomNumbers = generateRandomNumbersUseCase(currentColumn)
+        val numberList = randomNumbers.toList()
+
+        val newCardNumbers = _state.value.cardNumbers.mapIndexed { rowIdx, row ->
+            if (rowIdx == 2 && currentColumn == 2) {
+                row
+            } else {
+                row.mapIndexed { colIdx, value ->
+                    if (colIdx == currentColumn && value.isBlank()) {
+                        val numIdx = if (currentColumn == 2) {
+                            if (rowIdx < 2) rowIdx else rowIdx - 1
+                        } else rowIdx
+                        numberList.getOrNull(numIdx)?.toString() ?: value
+                    } else value
+                }
+            }
+        }
+
+        _state.value = _state.value.copy(
+            cardNumbers = newCardNumbers,
+            errorMessage = null
+        )
+        saveCardSetupStateToPreferences()
     }
 
     fun updateCardNumber(row: Int, col: Int, value: String) {
