@@ -70,8 +70,12 @@ fun BingoCardSetupScreen(
                     .padding(bottom = 24.dp)
             )
 
+            val isNColumn = state.currentColumn == 2
             Text(
-                text = "Enter 5 unique numbers between ${columnRanges.getOrElse(state.currentColumn) { 1..15 }.first} and ${columnRanges.getOrElse(state.currentColumn) { 1..15 }.last}. The center is a FREE space.",
+                text = buildString {
+                    append("Enter ${if (isNColumn) "4" else "5"} unique numbers between ${columnRanges.getOrElse(state.currentColumn) { 1..15 }.first} and ${columnRanges.getOrElse(state.currentColumn) { 1..15 }.last}.")
+                    if (isNColumn) append(" The center is a FREE space.")
+                },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 16.dp)
