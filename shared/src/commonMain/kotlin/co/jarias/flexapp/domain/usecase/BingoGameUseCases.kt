@@ -7,7 +7,7 @@ import co.jarias.flexapp.domain.BingoCard
 import co.jarias.flexapp.domain.GameState
 import co.jarias.flexapp.domain.MarkedNumber
 import co.jarias.flexapp.domain.WinCondition
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 
 class GenerateBingoCardUseCase(private val bingoCardRepository: BingoCardRepository) {
     suspend operator fun invoke(gameId: Long): BingoCard {

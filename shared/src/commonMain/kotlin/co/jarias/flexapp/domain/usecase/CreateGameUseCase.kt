@@ -3,7 +3,7 @@ package co.jarias.flexapp.domain.usecase
 import co.jarias.flexapp.data.repository.GameRepository
 import co.jarias.flexapp.domain.Game
 import co.jarias.flexapp.domain.WinCondition
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 
 class CreateGameUseCase(private val gameRepository: GameRepository) {
     suspend operator fun invoke(name: String, targetFigure: WinCondition? = null): Game {
