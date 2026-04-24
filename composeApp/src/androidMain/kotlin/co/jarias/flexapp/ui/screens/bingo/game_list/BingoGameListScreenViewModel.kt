@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import co.jarias.flexapp.data.local.PreferencesManager
 import co.jarias.flexapp.data.repository.BingoCardRepository
 import co.jarias.flexapp.data.repository.GameRepository
-import co.jarias.flexapp.data.repository.MarkedNumberRepository
 import co.jarias.flexapp.domain.usecase.DropGameUseCase
 import co.jarias.flexapp.domain.usecase.GetAllGamesUseCase
 import co.jarias.flexapp.domain.usecase.RestartGameUseCase
@@ -17,18 +16,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class BingoGameListScreenViewModel(
-    private val gameRepository: GameRepository,
+    private val getAllGamesUseCase: GetAllGamesUseCase,
+    private val restartGameUseCase: RestartGameUseCase,
+    private val dropGameUseCase: DropGameUseCase,
     private val bingoCardRepository: BingoCardRepository,
-    private val markedNumberRepository: MarkedNumberRepository,
+    private val gameRepository: GameRepository,
     private val preferencesManager: PreferencesManager? = null
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BingoGameListScreenState())
     val state: StateFlow<BingoGameListScreenState> = _state.asStateFlow()
-
-    private val getAllGamesUseCase = GetAllGamesUseCase(gameRepository)
-    private val restartGameUseCase = RestartGameUseCase(gameRepository, markedNumberRepository)
-    private val dropGameUseCase = DropGameUseCase(gameRepository, bingoCardRepository, markedNumberRepository)
 
     init {
         loadGames()

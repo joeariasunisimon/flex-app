@@ -2,10 +2,6 @@ package co.jarias.flexapp.ui.screens.bingo.game_play
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import co.jarias.flexapp.data.repository.BingoCardRepository
-import co.jarias.flexapp.data.repository.GameRepository
-import co.jarias.flexapp.data.repository.MarkedNumberRepository
-import co.jarias.flexapp.domain.usecase.CheckWinConditionUseCase
 import co.jarias.flexapp.domain.usecase.CompleteGameUseCase
 import co.jarias.flexapp.domain.usecase.GetGameStateUseCase
 import co.jarias.flexapp.domain.usecase.MarkNumberUseCase
@@ -15,21 +11,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class BingoGamePlayScreenViewModel(
-    private val gameRepository: GameRepository,
-    private val bingoCardRepository: BingoCardRepository,
-    private val markedNumberRepository: MarkedNumberRepository,
+    private val getGameStateUseCase: GetGameStateUseCase,
+    private val markNumberUseCase: MarkNumberUseCase,
+    private val completeGameUseCase: CompleteGameUseCase,
     private val gameId: Long = 0
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BingoGamePlayScreenState())
     val state: StateFlow<BingoGamePlayScreenState> = _state.asStateFlow()
-
-    private val getGameStateUseCase = GetGameStateUseCase(
-        gameRepository, bingoCardRepository, markedNumberRepository,
-        CheckWinConditionUseCase(bingoCardRepository, markedNumberRepository)
-    )
-    private val markNumberUseCase = MarkNumberUseCase(markedNumberRepository, bingoCardRepository)
-    private val completeGameUseCase = CompleteGameUseCase(gameRepository, markedNumberRepository)
 
     private var currentGameId: Long = gameId
 
