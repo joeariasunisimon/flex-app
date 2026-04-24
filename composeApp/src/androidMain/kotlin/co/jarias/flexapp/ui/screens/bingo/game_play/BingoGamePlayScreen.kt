@@ -402,15 +402,13 @@ private fun WinDialog(
                 ) {
                     OutlinedButton(
                         onClick = onDismiss,
-                        modifier = Modifier.weight(1f)
                     ) {
                         Text("Continue")
                     }
                     Button(
                         onClick = onBackToMenu,
-                        modifier = Modifier.weight(1f)
                     ) {
-                        Text("Back to Menu")
+                        Text("Go to Menu")
                     }
                 }
             }

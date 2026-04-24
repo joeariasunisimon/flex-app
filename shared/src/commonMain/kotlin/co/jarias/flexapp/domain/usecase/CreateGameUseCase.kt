@@ -15,7 +15,7 @@ class CreateGameUseCase(private val gameRepository: GameRepository) {
 }
 
 class GetAllGamesUseCase(private val gameRepository: GameRepository) {
-    suspend operator fun invoke(): List<Game> {
+    operator fun invoke(): kotlinx.coroutines.flow.Flow<List<Game>> {
         return gameRepository.getAllGames()
     }
 }
