@@ -12,6 +12,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import co.jarias.flexapp.ui.screens.bingo.card_setup.BingoCardSetupScreen
 import co.jarias.flexapp.ui.screens.bingo.card_setup.BingoCardSetupScreenViewModel
+import co.jarias.flexapp.ui.screens.bingo.card_scanner.BingoCardScannerScreen
+import co.jarias.flexapp.ui.screens.bingo.card_scanner.BingoCardScannerScreenViewModel
 import co.jarias.flexapp.ui.screens.bingo.figure_selection.BingoFigureSelectionScreen
 import co.jarias.flexapp.ui.screens.bingo.figure_selection.BingoFigureSelectionScreenViewModel
 import co.jarias.flexapp.ui.screens.bingo.game_list.BingoGameListScreen
@@ -107,6 +109,23 @@ fun AppNavigation(navController: NavHostController) {
 
             BingoCardSetupScreen(
                 gameId = gameId,
+                onNavigate = { event -> handleNavigationEvent(navController, event) },
+                onEvent = { event -> viewModel.onEvent(event) },
+                state = state
+            )
+        }
+
+        composable(
+            route = AppDestinations.BINGO_CARD_SCANNER_ROUTE,
+            arguments = listOf(
+                navArgument(NavArguments.GAME_ID) { type = NavType.LongType }
+            )
+        ) { backStackEntry ->
+            val gameId = backStackEntry.arguments?.getLong(NavArguments.GAME_ID) ?: 0L
+            val viewModel: BingoCardScannerScreenViewModel = koinViewModel { parametersOf(gameId) }
+            val state by viewModel.state.collectAsState()
+
+            BingoCardScannerScreen(
                 onNavigate = { event -> handleNavigationEvent(navController, event) },
                 onEvent = { event -> viewModel.onEvent(event) },
                 state = state

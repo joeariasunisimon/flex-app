@@ -165,7 +165,7 @@ private fun GameListItem(
     onRestart: () -> Unit,
     onDelete: () -> Unit
 ) {
-    val isPendingSetup = pendingSetupGameIds.contains(game.id)
+    val isPendingSetup = pendingSetupGameIds.contains(game.id) || game.targetFigure == null
     val isReadyToPlay = !game.isCompleted && game.targetFigure != null
     var showDeleteDialog by remember { mutableStateOf(false) }
 
@@ -194,7 +194,7 @@ private fun GameListItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(enabled = !isPendingSetup, onClick = if (isPendingSetup) onContinueSetup else onPlay),
+            .clickable(onClick = if (isPendingSetup) onContinueSetup else onPlay),
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {

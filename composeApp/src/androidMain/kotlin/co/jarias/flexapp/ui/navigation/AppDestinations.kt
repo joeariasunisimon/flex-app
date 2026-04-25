@@ -10,6 +10,10 @@ object AppDestinations {
     const val BINGO_CARD_SETUP_ROUTE = "$BINGO_CARD_SETUP/{${NavArguments.GAME_ID}}"
     fun bingoCardSetupRoute(gameId: Long) = "$BINGO_CARD_SETUP/$gameId"
 
+    private const val BINGO_CARD_SCANNER = "bingo_card_scanner"
+    const val BINGO_CARD_SCANNER_ROUTE = "$BINGO_CARD_SCANNER/{${NavArguments.GAME_ID}}"
+    fun bingoCardScannerRoute(gameId: Long) = "$BINGO_CARD_SCANNER/$gameId"
+
     private const val BINGO_FIGURE_SELECTION = "bingo_figure_selection"
     const val BINGO_FIGURE_SELECTION_ROUTE = "$BINGO_FIGURE_SELECTION/{${NavArguments.GAME_ID}}"
     fun bingoFigureSelectionRoute(gameId: Long) = "$BINGO_FIGURE_SELECTION/$gameId"

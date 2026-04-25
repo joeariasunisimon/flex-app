@@ -48,6 +48,11 @@ fun BingoCardSetupScreen(
                 IconButton(onClick = { onNavigate(NavigationEvent.OnNavigateUp) }) {
                     Icon(painter = painterResource(id = R.drawable.outline_arrow_back), contentDescription = "Back")
                 }
+            },
+            actions = {
+                IconButton(onClick = { onNavigate(NavigationEvent.NavigateToBingoCardScanner(gameId)) }) {
+                    Icon(painter = painterResource(id = R.drawable.outline_photo_camera_24), contentDescription = "Scan Card")
+                }
             }
         )
 

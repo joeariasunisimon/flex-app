@@ -8,6 +8,7 @@ sealed class NavigationEvent {
     data object NavigateToBingoGameList : NavigationEvent()
     data object NavigateToBingoGameSetup : NavigationEvent()
     data class NavigateToBingoCardSetup(val gameId: Long) : NavigationEvent()
+    data class NavigateToBingoCardScanner(val gameId: Long) : NavigationEvent()
     data class NavigateToBingoFigureSelection(val gameId: Long) : NavigationEvent()
     data class NavigateToBingoGamePlay(val gameId: Long) : NavigationEvent()
     data class NavigateToTool(val toolType: ToolType) : NavigationEvent()
@@ -40,6 +41,10 @@ fun handleNavigationEvent(
             navController.navigate(AppDestinations.bingoCardSetupRoute(event.gameId)) {
                 popUpTo(AppDestinations.BINGO_GAME_LIST)
             }
+        }
+
+        is NavigationEvent.NavigateToBingoCardScanner -> {
+            navController.navigate(AppDestinations.bingoCardScannerRoute(event.gameId))
         }
 
         is NavigationEvent.NavigateToBingoFigureSelection -> {
