@@ -5,19 +5,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import co.jarias.flexapp.data.local.Database
-import co.jarias.flexapp.data.local.DatabaseDriverFactory
-import co.jarias.flexapp.data.local.PreferencesManager
-import co.jarias.flexapp.data.repository.BingoCardRepositoryImpl
-import co.jarias.flexapp.data.repository.GameRepositoryImpl
-import co.jarias.flexapp.data.repository.MarkedNumberRepositoryImpl
 import co.jarias.flexapp.ui.screens.bingo.card_setup.BingoCardSetupScreen
 import co.jarias.flexapp.ui.screens.bingo.card_setup.BingoCardSetupScreenViewModel
 import co.jarias.flexapp.ui.screens.bingo.figure_selection.BingoFigureSelectionScreen
@@ -32,28 +24,17 @@ import co.jarias.flexapp.ui.screens.tools.ToolSelectionScreen
 import co.jarias.flexapp.ui.screens.tools.ToolSelectionScreenViewModel
 import co.jarias.flexapp.ui.screens.welcome.WelcomeScreen
 import co.jarias.flexapp.ui.screens.welcome.WelcomeScreenViewModel
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
-    val context = LocalContext.current
-
-    val preferencesManager = remember { PreferencesManager(context) }
-    val gameRepository = remember {
-        GameRepositoryImpl(Database(DatabaseDriverFactory(context)))
-    }
-    val bingoCardRepository = remember {
-        BingoCardRepositoryImpl(Database(DatabaseDriverFactory(context)))
-    }
-    val markedNumberRepository = remember {
-        MarkedNumberRepositoryImpl(Database(DatabaseDriverFactory(context)))
-    }
-
     NavHost(
         navController = navController,
         startDestination = AppDestinations.WELCOME
     ) {
         composable(AppDestinations.WELCOME) {
-            val viewModel = remember { WelcomeScreenViewModel(preferencesManager) }
+            val viewModel: WelcomeScreenViewModel = koinViewModel()
             val state by viewModel.state.collectAsState()
 
             WelcomeScreen(
@@ -65,7 +46,7 @@ fun AppNavigation(navController: NavHostController) {
         }
 
         composable(AppDestinations.TOOL_SELECTION) {
-            val viewModel = remember { ToolSelectionScreenViewModel(preferencesManager) }
+            val viewModel: ToolSelectionScreenViewModel = koinViewModel()
             val state by viewModel.state.collectAsState()
 
             ToolSelectionScreen(
@@ -76,7 +57,7 @@ fun AppNavigation(navController: NavHostController) {
         }
 
         composable(AppDestinations.BINGO_GAME_LIST) {
-            val viewModel = remember { BingoGameListScreenViewModel(gameRepository, bingoCardRepository, markedNumberRepository, preferencesManager) }
+            val viewModel: BingoGameListScreenViewModel = koinViewModel()
             val state by viewModel.state.collectAsState()
 
             LaunchedEffect(state.continueToCardSetup, state.continueToFigureSelection, state.continueToGamePlay) {
@@ -104,7 +85,7 @@ fun AppNavigation(navController: NavHostController) {
         }
 
         composable(AppDestinations.BINGO_GAME_SETUP) {
-            val viewModel = remember { BingoGameSetupScreenViewModel(gameRepository, preferencesManager) }
+            val viewModel: BingoGameSetupScreenViewModel = koinViewModel()
             val state by viewModel.state.collectAsState()
 
             BingoGameSetupScreen(
@@ -121,7 +102,7 @@ fun AppNavigation(navController: NavHostController) {
             )
         ) { backStackEntry ->
             val gameId = backStackEntry.arguments?.getLong(NavArguments.GAME_ID) ?: 0L
-            val viewModel = remember { BingoCardSetupScreenViewModel(bingoCardRepository, preferencesManager, gameId) }
+            val viewModel: BingoCardSetupScreenViewModel = koinViewModel { parametersOf(gameId) }
             val state by viewModel.state.collectAsState()
 
             BingoCardSetupScreen(
@@ -139,9 +120,7 @@ fun AppNavigation(navController: NavHostController) {
             )
         ) { backStackEntry ->
             val gameId = backStackEntry.arguments?.getLong(NavArguments.GAME_ID) ?: 0L
-            val viewModel = remember {
-                BingoFigureSelectionScreenViewModel(bingoCardRepository, gameRepository, gameId)
-            }
+            val viewModel: BingoFigureSelectionScreenViewModel = koinViewModel { parametersOf(gameId) }
             val state by viewModel.state.collectAsState()
 
             BingoFigureSelectionScreen(
@@ -159,9 +138,7 @@ fun AppNavigation(navController: NavHostController) {
             )
         ) { backStackEntry ->
             val gameId = backStackEntry.arguments?.getLong(NavArguments.GAME_ID) ?: 0L
-            val viewModel = remember {
-                BingoGamePlayScreenViewModel(gameRepository, bingoCardRepository, markedNumberRepository, gameId)
-            }
+            val viewModel: BingoGamePlayScreenViewModel = koinViewModel { parametersOf(gameId) }
             val state by viewModel.state.collectAsState()
 
             BingoGamePlayScreen(

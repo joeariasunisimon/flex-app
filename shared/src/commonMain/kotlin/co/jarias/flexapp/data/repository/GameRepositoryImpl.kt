@@ -4,13 +4,22 @@ import co.jarias.flexapp.data.local.Database
 import co.jarias.flexapp.domain.Game
 import co.jarias.flexapp.domain.WinCondition
 import co.jarias.flexapp.shared.database.Game as DbGame
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class GameRepositoryImpl(database: Database) : GameRepository {
 
     private val queries = database.database.bingoDatabaseQueries
 
-    override suspend fun getAllGames(): List<Game> {
-        return queries.selectAllGames().executeAsList().map { it.toDomain() }
+    override fun getAllGames(): Flow<List<Game>> {
+        return queries.selectAllGames()
+            .asFlow()
+            .mapToList(Dispatchers.IO)
+            .map { list -> list.map { it.toDomain() } }
     }
 
 

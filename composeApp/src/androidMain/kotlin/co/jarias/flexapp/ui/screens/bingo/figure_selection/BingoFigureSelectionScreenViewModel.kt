@@ -2,6 +2,7 @@ package co.jarias.flexapp.ui.screens.bingo.figure_selection
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import co.jarias.flexapp.data.local.PreferencesManager
 import co.jarias.flexapp.data.repository.BingoCardRepository
 import co.jarias.flexapp.data.repository.GameRepository
 import co.jarias.flexapp.domain.WinCondition
@@ -15,6 +16,7 @@ import kotlinx.coroutines.withContext
 class BingoFigureSelectionScreenViewModel(
     private val bingoCardRepository: BingoCardRepository,
     private val gameRepository: GameRepository,
+    private val preferencesManager: PreferencesManager? = null,
     private val gameId: Long = 0
 ) : ViewModel() {
 
@@ -108,6 +110,7 @@ class BingoFigureSelectionScreenViewModel(
                     withContext(Dispatchers.IO) {
                         gameRepository.updateGame(updatedGame)
                     }
+                    preferencesManager?.removePendingSetupGameId(currentState.gameId)
                 }
 
                 _state.value = currentState.copy(

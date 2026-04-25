@@ -215,10 +215,23 @@ private fun GameListItem(
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(4.dp))
+                    
+                    val statusText = when {
+                        isPendingSetup -> "Setup incomplete"
+                        game.isCompleted -> "Game finished"
+                        else -> "In progress • Target: ${game.targetFigure?.displayName ?: "None"}"
+                    }
+                    
+                    val statusColor = when {
+                        isPendingSetup -> MaterialTheme.colorScheme.error
+                        game.isCompleted -> MaterialTheme.colorScheme.tertiary
+                        else -> MaterialTheme.colorScheme.primary
+                    }
+
                     Text(
-                        text = if (isPendingSetup) "Setup incomplete" else "Target: ${game.targetFigure?.displayName ?: "Not set"}",
+                        text = statusText,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = if (isPendingSetup) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                        color = statusColor
                     )
                 }
                 if (game.isCompleted) {
