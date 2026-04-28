@@ -66,29 +66,32 @@ data class BingoCard(
 
 
 @Serializable
+data class BingoCellPos(val row: Int, val col: Int)
+
+@Serializable
 sealed class WinCondition {
     abstract val displayName: String
-    abstract val requiredCells: Set<Pair<Int, Int>>
+    abstract val requiredCells: Set<BingoCellPos>
 
     @Serializable
     data class Predefined(
         override val displayName: String,
-        override val requiredCells: Set<Pair<Int, Int>>
+        override val requiredCells: Set<BingoCellPos>
     ) : WinCondition()
 
     @Serializable
     data class Custom(
         override val displayName: String = "Custom",
-        override val requiredCells: Set<Pair<Int, Int>>
+        override val requiredCells: Set<BingoCellPos>
     ) : WinCondition()
 
     companion object {
-        val B = Predefined("B", (0..4).map { Pair(it, 0) }.toSet())
-        val I = Predefined("I", (0..4).map { Pair(it, 1) }.toSet())
-        val N = Predefined("N", (0..4).map { Pair(it, 2) }.toSet())
-        val G = Predefined("G", (0..4).map { Pair(it, 3) }.toSet())
-        val O = Predefined("O", (0..4).map { Pair(it, 4) }.toSet())
-        val FULL_CARD = Predefined("Full Card", (0..4).flatMap { row -> (0..4).map { col -> Pair(row, col) } }.toSet())
+        val B = Predefined("B", (0..4).map { BingoCellPos(it, 0) }.toSet())
+        val I = Predefined("I", (0..4).map { BingoCellPos(it, 1) }.toSet())
+        val N = Predefined("N", (0..4).map { BingoCellPos(it, 2) }.toSet())
+        val G = Predefined("G", (0..4).map { BingoCellPos(it, 3) }.toSet())
+        val O = Predefined("O", (0..4).map { BingoCellPos(it, 4) }.toSet())
+        val FULL_CARD = Predefined("Full Card", (0..4).flatMap { row -> (0..4).map { col -> BingoCellPos(row, col) } }.toSet())
 
         private val json = Json { ignoreUnknownKeys = true }
 

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import co.jarias.flexapp.data.local.PreferencesManager
 import co.jarias.flexapp.data.repository.BingoCardRepository
 import co.jarias.flexapp.data.repository.GameRepository
+import co.jarias.flexapp.domain.BingoCellPos
 import co.jarias.flexapp.domain.WinCondition
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -67,7 +68,7 @@ class BingoFigureSelectionScreenViewModel(
                 )
             }
             is BingoFigureSelectionScreenEvents.OnCustomPatternToggled -> {
-                val pos = Pair(event.row, event.col)
+                val pos = BingoCellPos(event.row, event.col)
                 val newPattern = if (_state.value.customPattern.contains(pos)) {
                     _state.value.customPattern - pos
                 } else {

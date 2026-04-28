@@ -24,6 +24,7 @@ import androidx.compose.ui.window.Dialog
 import co.jarias.flexapp.R
 import co.jarias.flexapp.domain.BingoCard
 import co.jarias.flexapp.domain.BingoCell
+import co.jarias.flexapp.domain.BingoCellPos
 import co.jarias.flexapp.domain.Game
 import co.jarias.flexapp.domain.GameState
 import co.jarias.flexapp.domain.WinCondition
@@ -229,7 +230,7 @@ private fun BingoCardGrid(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 row.forEachIndexed { colIndex, cell ->
-                    val isWinningCell = targetFigure?.requiredCells?.contains(Pair(rowIndex, colIndex)) == true
+                    val isWinningCell = targetFigure?.requiredCells?.contains(BingoCellPos(rowIndex, colIndex)) == true
                     val isMarked = cell.number != null && markedNumbers.contains(cell.number)
                     BingoGameCell(
                         cell = cell,

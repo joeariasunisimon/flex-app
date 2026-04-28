@@ -17,6 +17,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import co.jarias.flexapp.R
+import co.jarias.flexapp.domain.BingoCellPos
 import co.jarias.flexapp.domain.WinCondition
 import co.jarias.flexapp.ui.navigation.NavigationEvent
 
@@ -110,8 +111,8 @@ fun BingoFigureSelectionScreen(
                                 for (col in 0..4) {
                                     val cell = state.cardGrid.getOrNull(row)?.getOrNull(col)
                                     val isFree = cell?.isFree == true
-                                    val isCustomSelected = state.customPattern.contains(Pair(row, col))
-                                    val isHighlighted = state.selectedFigure?.requiredCells?.contains(Pair(row, col)) == true || isCustomSelected
+                                    val isCustomSelected = state.customPattern.contains(BingoCellPos(row, col))
+                                    val isHighlighted = state.selectedFigure?.requiredCells?.contains(BingoCellPos(row, col)) == true || isCustomSelected
 
                                     Box(
                                         modifier = Modifier
