@@ -17,9 +17,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview as ComposePreview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
@@ -158,6 +160,19 @@ fun BingoCardScannerScreen(
 @androidx.annotation.OptIn(ExperimentalGetImage::class)
 @Composable
 fun CameraPreview(onGridDetected: (List<List<String>>) -> Unit) {
+    if (LocalInspectionMode.current) {
+        // Show a placeholder in Previews to avoid CameraX initialization crash
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.DarkGray),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Camera Preview Placeholder", color = Color.White)
+        }
+        return
+    }
+
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
@@ -170,7 +185,7 @@ fun CameraPreview(onGridDetected: (List<List<String>>) -> Unit) {
             cameraProviderFuture.addListener({
                 val cameraProvider = cameraProviderFuture.get()
                 val preview = Preview.Builder().build().also {
-                    it.setSurfaceProvider(previewView.surfaceProvider)
+                    it.surfaceProvider = previewView.surfaceProvider
                 }
 
                 val imageAnalysis = ImageAnalysis.Builder()
@@ -178,7 +193,6 @@ fun CameraPreview(onGridDetected: (List<List<String>>) -> Unit) {
                     .build()
                     .also {
                         it.setAnalyzer(executor) { imageProxy ->
-                            @OptIn(androidx.camera.core.ExperimentalGetImage::class)
                             val mediaImage = imageProxy.image
                             if (mediaImage != null) {
                                 val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
@@ -256,4 +270,41 @@ fun ScannerProgressIndicator(size: androidx.compose.ui.unit.Dp) {
     CircularProgressIndicator(
         modifier = Modifier.size(size)
     )
+}
+
+@ComposePreview(showBackground = true)
+@Composable
+fun BingoCardScannerScreenScanningPreview() {
+    MaterialTheme {
+        BingoCardScannerScreen(
+            onNavigate = {},
+            onEvent = {},
+            state = BingoCardScannerScreenState(
+                gameId = 1L,
+                detectedGrid = null
+            )
+        )
+    }
+}
+
+@ComposePreview(showBackground = true)
+@Composable
+fun BingoCardScannerScreenDetectedPreview() {
+    val dummyGrid = listOf(
+        listOf("1", "16", "31", "46", "61"),
+        listOf("2", "17", "32", "47", "62"),
+        listOf("3", "18", "FREE", "48", "63"),
+        listOf("4", "19", "34", "49", "64"),
+        listOf("5", "20", "35", "50", "65")
+    )
+    MaterialTheme {
+        BingoCardScannerScreen(
+            onNavigate = {},
+            onEvent = {},
+            state = BingoCardScannerScreenState(
+                gameId = 1L,
+                detectedGrid = dummyGrid
+            )
+        )
+    }
 }
