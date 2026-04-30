@@ -30,11 +30,11 @@ val commonModule = module {
     factory { UpdateGameNameUseCase(get()) }
 }
 
-fun initKoin(appDeclaration: KoinAppDeclaration = {}) =
+fun initKoin(appDeclaration: KoinAppDeclaration) =
     startKoin {
         appDeclaration()
         modules(platformModule, commonModule)
     }
 
-// For iOS
+// For iOS or simple Android init
 fun initKoin() = initKoin {}

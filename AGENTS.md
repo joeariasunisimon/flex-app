@@ -6,6 +6,9 @@
 # Android debug APK
 ./gradlew :composeApp:assembleDebug
 
+# iOS framework (for development)
+./gradlew :shared:assembleSharedDebugFrameworkIosSimulatorArm64
+
 # Full build
 ./gradlew build
 

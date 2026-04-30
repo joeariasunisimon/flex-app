@@ -1,18 +1,25 @@
 import SwiftUI
 
 struct BingoFigureSelectionScreenView: View {
-    weak var coordinator: AppNavCoordinator?
-    var gameId: Int
+    private let onNavigate: (NavigationEvent) -> Void
+    var gameId: Int64
+    
+    init(coordinator: AppNavCoordinator?, gameId: Int64) {
+        self.onNavigate = { event in
+            coordinator?.handleNavigationEvent(event)
+        }
+        self.gameId = gameId
+    }
     
     var body: some View {
         VStack {
-            Text("Select Your Win Condition")
+            Text("Bingo Figure Selection")
                 .font(.largeTitle)
             
             Spacer()
             
-            Button("Select Full Card") {
-                coordinator?.goToBingoGamePlay(gameId: gameId)
+            Button("Finish Setup") {
+                onNavigate(.navigateToBingoGamePlay(gameId: gameId))
             }
             .buttonStyle(.borderedProminent)
         }

@@ -1,23 +1,29 @@
 import SwiftUI
 
 struct BingoGamePlayScreenView: View {
-    weak var coordinator: AppNavCoordinator?
-    var gameId: Int
+    private let onNavigate: (NavigationEvent) -> Void
+    var gameId: Int64
+    
+    init(coordinator: AppNavCoordinator?, gameId: Int64) {
+        self.onNavigate = { event in
+            coordinator?.handleNavigationEvent(event)
+        }
+        self.gameId = gameId
+    }
     
     var body: some View {
         VStack {
-            Text("Play Bingo!")
+            Text("Bingo Game Play")
                 .font(.largeTitle)
             
             Spacer()
             
             Text("Game ID: \(gameId)")
-                .font(.headline)
             
             Spacer()
             
-            Button("Back to List") {
-                coordinator?.goToBingoGameList()
+            Button("Exit Game") {
+                onNavigate(.navigateToBingoGameList)
             }
             .buttonStyle(.bordered)
         }

@@ -15,8 +15,15 @@ kotlin {
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
-            baseName = "Shared"
-            isStatic = true
+            baseName = "shared"
+            isStatic = false
+            linkerOpts("-lsqlite3")
+        }
+    }
+
+    targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
+        binaries.all {
+            linkerOpts("-lsqlite3")
         }
     }
     

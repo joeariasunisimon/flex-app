@@ -14,9 +14,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import co.jarias.flexapp.R
+import co.jarias.flexapp.domain.BingoCard
 import co.jarias.flexapp.domain.BingoCellPos
 import co.jarias.flexapp.domain.WinCondition
 import co.jarias.flexapp.ui.navigation.NavigationEvent
@@ -266,5 +268,23 @@ fun BingoFigureSelectionScreen(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BingoFigureSelectionScreenPreview() {
+    MaterialTheme {
+        BingoFigureSelectionScreen(
+            gameId = 1L,
+            onNavigate = {},
+            onEvent = {},
+            state = BingoFigureSelectionScreenState(
+                gameId = 1L,
+                cardGrid = BingoCard.generateRandomCard(),
+                isLoading = false,
+                selectedFigure = WinCondition.B
+            )
+        )
     }
 }

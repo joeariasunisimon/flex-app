@@ -1,8 +1,15 @@
 import SwiftUI
 
 struct BingoCardSetupScreenView: View {
-    weak var coordinator: AppNavCoordinator?
-    var gameId: Int
+    private let onNavigate: (NavigationEvent) -> Void
+    var gameId: Int64
+    
+    init(coordinator: AppNavCoordinator?, gameId: Int64) {
+        self.onNavigate = { event in
+            coordinator?.handleNavigationEvent(event)
+        }
+        self.gameId = gameId
+    }
     
     var body: some View {
         VStack {
@@ -17,7 +24,7 @@ struct BingoCardSetupScreenView: View {
             Spacer()
             
             Button("Next") {
-                coordinator?.goToBingoFigureSelection(gameId: gameId)
+                onNavigate(.navigateToBingoFigureSelection(gameId: gameId))
             }
             .buttonStyle(.borderedProminent)
         }

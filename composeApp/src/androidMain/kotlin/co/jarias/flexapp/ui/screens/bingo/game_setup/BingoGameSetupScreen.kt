@@ -109,16 +109,6 @@ fun BingoGameSetupScreen(
     }
 }
 
-@Preview(showBackground = true, name = "Initial State")
-@Composable
-fun BingoGameSetupScreenPreviewInitial() {
-    BingoGameSetupScreen(
-        onNavigate = {},
-        onEvent = {},
-        state = BingoGameSetupScreenState()
-    )
-}
-
 @Preview(showBackground = true, name = "With Game Name")
 @Composable
 fun BingoGameSetupScreenPreviewWithName() {
