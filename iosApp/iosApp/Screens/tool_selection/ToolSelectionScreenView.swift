@@ -1,4 +1,5 @@
 import SwiftUI
+import shared
 
 struct ToolSelectionScreenView: View {
     @StateObject private var viewModel = ToolSelectionScreenViewModel()
@@ -11,24 +12,83 @@ struct ToolSelectionScreenView: View {
     }
     
     var body: some View {
-        VStack {
-            Text("Tool Selection")
-                .font(.largeTitle)
+        ZStack {
+            Color.backgroundWarm
+                .ignoresSafeArea()
             
-            Spacer()
-            
-            ForEach(viewModel.state.availableTools, id: \.self) { tool in
-                Button("Select \(tool)") {
-                    viewModel.onEvent(.onToolSelected(tool: tool))
-                    if tool == "Bingo" {
+            VStack(alignment: .leading, spacing: 24) {
+                Text("Choose a game to play")
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .padding(.horizontal)
+                    .padding(.top, 16)
+                
+                VStack(spacing: 16) {
+                    ToolCard(
+                        title: "Bingo",
+                        description: "Play the classic bingo game with customizable cards and target figures",
+                        iconName: "die.face.5",
+                        enabled: true
+                    ) {
+                        viewModel.onEvent(.onToolSelected(tool: "Bingo"))
                         onNavigate(.navigateToBingoGameList)
                     }
+                    
+                    ToolCard(
+                        title: "Coming Soon...",
+                        description: "More exciting games will be available soon!",
+                        iconName: "rocket.fill",
+                        enabled: false
+                    ) { }
                 }
-                .buttonStyle(.borderedProminent)
-                .padding(.bottom, 10)
+                .padding(.horizontal)
+                
+                Spacer()
             }
         }
-        .padding()
+        .navigationTitle("Select a Game")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+struct ToolCard: View {
+    let title: String
+    let description: String
+    let iconName: String
+    let enabled: Bool
+    let onClick: () -> Void
+    
+    var body: some View {
+        Button(action: onClick) {
+            HStack(spacing: 16) {
+                Image(systemName: iconName)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 48, height: 48)
+                    .padding(8)
+                    .background(Color.primaryTeal.opacity(0.1))
+                    .cornerRadius(12)
+                    .foregroundColor(.primaryTeal)
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .foregroundColor(.black)
+                    
+                    Text(description)
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.leading)
+                }
+                
+                Spacer()
+            }
+            .padding()
+            .background(enabled ? Color.surfaceElevated : Color.surfaceElevated.opacity(0.5))
+            .cornerRadius(16)
+        }
+        .disabled(!enabled)
     }
 }
 

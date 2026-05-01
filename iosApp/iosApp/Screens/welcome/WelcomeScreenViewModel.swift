@@ -19,10 +19,14 @@ class WelcomeScreenViewModel: ObservableObject {
         }
     }
     
-    func onEvent(_ event: WelcomeScreenEvents) {
+    func onEvent(_ event: WelcomeScreenEvents, onNavigate: (NavigationEvent) -> Void) {
         switch event {
         case .onGetStartedClicked:
-            break
+            if let lastTool = state.lastTool {
+                onNavigate(.navigateToTool(toolType: lastTool))
+            } else {
+                onNavigate(.navigateToToolSelection)
+            }
         }
     }
 }
