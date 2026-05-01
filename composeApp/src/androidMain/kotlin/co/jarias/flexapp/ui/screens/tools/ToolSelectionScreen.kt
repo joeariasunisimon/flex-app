@@ -3,7 +3,6 @@ package co.jarias.flexapp.ui.screens.tools
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -15,6 +14,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import co.jarias.flexapp.ui.navigation.NavigationEvent
 import co.jarias.flexapp.R
+import co.jarias.flexapp.ui.theme.FlexAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,7 +26,12 @@ fun ToolSelectionScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Select a Game") }
+                title = {
+                    Text(
+                        text = "Select a Game",
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                }
             )
         }
     ) { padding ->
@@ -82,7 +87,7 @@ private fun ToolCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(enabled = enabled) { onClick() },
-        shape = RoundedCornerShape(12.dp),
+        shape = MaterialTheme.shapes.medium,
         color = if (enabled) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surfaceVariant.copy(
             alpha = 0.5f
         )
@@ -126,9 +131,11 @@ private fun ToolCard(
 )
 @Composable
 fun ToolSelectionScreenPreview() {
-    ToolSelectionScreen(
-        onNavigate = {},
-        onEvent = {},
-        state = ToolSelectionScreenState()
-    )
+    FlexAppTheme {
+        ToolSelectionScreen(
+            onNavigate = {},
+            onEvent = {},
+            state = ToolSelectionScreenState()
+        )
+    }
 }

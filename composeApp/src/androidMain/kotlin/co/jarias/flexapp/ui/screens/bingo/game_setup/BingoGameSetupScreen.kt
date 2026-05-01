@@ -3,7 +3,6 @@ package co.jarias.flexapp.ui.screens.bingo.game_setup
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -14,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
 import co.jarias.flexapp.R
 import co.jarias.flexapp.ui.navigation.NavigationEvent
+import co.jarias.flexapp.ui.theme.FlexAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,10 +34,18 @@ fun BingoGameSetupScreen(
             .background(MaterialTheme.colorScheme.background)
     ) {
         TopAppBar(
-            title = { Text("Create New Game") },
+            title = {
+                Text(
+                    text = "Create New Game",
+                    style = MaterialTheme.typography.titleLarge,
+                )
+            },
             navigationIcon = {
                 IconButton(onClick = { onNavigate(NavigationEvent.OnNavigateUp) }) {
-                    Icon(painter = painterResource(id = R.drawable.outline_arrow_back), contentDescription = "Back")
+                    Icon(
+                        painter = painterResource(id = R.drawable.outline_arrow_back),
+                        contentDescription = "Back"
+                    )
                 }
             }
         )
@@ -75,7 +83,7 @@ fun BingoGameSetupScreen(
             state.errorMessage?.let { error ->
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp),
+                    shape = MaterialTheme.shapes.small,
                     color = MaterialTheme.colorScheme.errorContainer
                 ) {
                     Text(
@@ -102,7 +110,11 @@ fun BingoGameSetupScreen(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
-                    Text("Create Game", fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Create Game",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
@@ -112,32 +124,39 @@ fun BingoGameSetupScreen(
 @Preview(showBackground = true, name = "With Game Name")
 @Composable
 fun BingoGameSetupScreenPreviewWithName() {
-    BingoGameSetupScreen(
-        onNavigate = {},
-        onEvent = {},
-        state = BingoGameSetupScreenState(gameName = "Family Bingo Night")
-    )
+    FlexAppTheme {
+        BingoGameSetupScreen(
+            onNavigate = {},
+            onEvent = {},
+            state = BingoGameSetupScreenState(gameName = "Family Bingo Night")
+        )
+    }
 }
 
 @Preview(showBackground = true, name = "Loading")
 @Composable
 fun BingoGameSetupScreenPreviewLoading() {
-    BingoGameSetupScreen(
-        onNavigate = {},
-        onEvent = {},
-        state = BingoGameSetupScreenState(gameName = "Test Game", isLoading = true)
-    )
+    FlexAppTheme {
+        BingoGameSetupScreen(
+            onNavigate = {},
+            onEvent = {},
+            state = BingoGameSetupScreenState(gameName = "Test Game", isLoading = true)
+        )
+    }
+
 }
 
 @Preview(showBackground = true, name = "Error")
 @Composable
 fun BingoGameSetupScreenPreviewError() {
-    BingoGameSetupScreen(
-        onNavigate = {},
-        onEvent = {},
-        state = BingoGameSetupScreenState(
-            gameName = "Test Game",
-            errorMessage = "Failed to create game. Please try again."
+    FlexAppTheme {
+        BingoGameSetupScreen(
+            onNavigate = {},
+            onEvent = {},
+            state = BingoGameSetupScreenState(
+                gameName = "Test Game",
+                errorMessage = "Failed to create game. Please try again."
+            )
         )
-    )
+    }
 }

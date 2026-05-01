@@ -27,6 +27,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import co.jarias.flexapp.R
 import co.jarias.flexapp.ui.navigation.NavigationEvent
+import co.jarias.flexapp.ui.theme.FlexAppTheme
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -53,22 +54,34 @@ fun BingoCardScannerScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Scan Bingo Card") },
+                title = {
+                    Text(
+                        text = "Scan Bingo Card",
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { onNavigate(NavigationEvent.OnNavigateUp) }) {
-                        Icon(painter = painterResource(id = R.drawable.outline_arrow_back), contentDescription = "Back")
+                        Icon(
+                            painter = painterResource(id = R.drawable.outline_arrow_back),
+                            contentDescription = "Back"
+                        )
                     }
                 }
             )
         }
     ) { padding ->
         if (cameraPermissionState.status.isGranted) {
-            Box(modifier = Modifier.padding(padding).fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize()
+            ) {
                 if (state.detectedGrid == null) {
                     CameraPreview(onGridDetected = { grid ->
                         onEvent(BingoCardScannerScreenEvents.OnNumbersDetected(grid))
                     })
-                    
+
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -85,13 +98,14 @@ fun BingoCardScannerScreen(
                                 .background(Color.White.copy(alpha = 0.1f))
                         )
                     }
-                    
+
                     Text(
                         text = "Align the Bingo card within the square",
                         color = Color.White,
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
                             .padding(bottom = 64.dp),
+                        style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold
                     )
                 } else {
@@ -106,15 +120,15 @@ fun BingoCardScannerScreen(
                             style = MaterialTheme.typography.headlineSmall,
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
-                        
+
                         BingoGridDisplay(grid = state.detectedGrid)
-                        
+
                         Spacer(modifier = Modifier.weight(1f))
-                        
+
                         if (state.errorMessage != null) {
                             Text(text = state.errorMessage, color = MaterialTheme.colorScheme.error)
                         }
-                        
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -123,9 +137,9 @@ fun BingoCardScannerScreen(
                                 onClick = { onEvent(BingoCardScannerScreenEvents.OnRetry) },
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Text("Retry")
+                                Text(text = "Retry", style = MaterialTheme.typography.titleSmall)
                             }
-                            
+
                             Button(
                                 onClick = { onEvent(BingoCardScannerScreenEvents.OnConfirmSave) },
                                 modifier = Modifier.weight(1f),
@@ -134,7 +148,10 @@ fun BingoCardScannerScreen(
                                 if (state.isProcessing) {
                                     ScannerProgressIndicator(size = 24.dp)
                                 } else {
-                                    Text("Confirm & Next")
+                                    Text(
+                                        text = "Confirm & Next",
+                                        style = MaterialTheme.typography.titleSmall
+                                    )
                                 }
                             }
                         }
@@ -143,7 +160,10 @@ fun BingoCardScannerScreen(
             }
         } else {
             Column(
-                modifier = Modifier.padding(padding).fillMaxSize().padding(24.dp),
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize()
+                    .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
@@ -195,8 +215,12 @@ fun CameraPreview(onGridDetected: (List<List<String>>) -> Unit) {
                         it.setAnalyzer(executor) { imageProxy ->
                             val mediaImage = imageProxy.image
                             if (mediaImage != null) {
-                                val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
-                                val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+                                val image = InputImage.fromMediaImage(
+                                    mediaImage,
+                                    imageProxy.imageInfo.rotationDegrees
+                                )
+                                val recognizer =
+                                    TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
                                 recognizer.process(image)
                                     .addOnSuccessListener { visionText ->
                                         val grid = parser.parse(visionText)
@@ -275,7 +299,7 @@ fun ScannerProgressIndicator(size: androidx.compose.ui.unit.Dp) {
 @ComposePreview(showBackground = true)
 @Composable
 fun BingoCardScannerScreenScanningPreview() {
-    MaterialTheme {
+    FlexAppTheme {
         BingoCardScannerScreen(
             onNavigate = {},
             onEvent = {},
@@ -297,7 +321,7 @@ fun BingoCardScannerScreenDetectedPreview() {
         listOf("4", "19", "34", "49", "64"),
         listOf("5", "20", "35", "50", "65")
     )
-    MaterialTheme {
+    FlexAppTheme {
         BingoCardScannerScreen(
             onNavigate = {},
             onEvent = {},

@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -22,6 +23,7 @@ import co.jarias.flexapp.domain.BingoCard
 import co.jarias.flexapp.domain.BingoCellPos
 import co.jarias.flexapp.domain.WinCondition
 import co.jarias.flexapp.ui.navigation.NavigationEvent
+import co.jarias.flexapp.ui.theme.FlexAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,10 +47,18 @@ fun BingoFigureSelectionScreen(
             .background(MaterialTheme.colorScheme.background)
     ) {
         TopAppBar(
-            title = { Text("Select Win Figure") },
+            title = {
+                Text(
+                    text = "Select Win Figure",
+                    style = MaterialTheme.typography.titleLarge,
+                )
+            },
             navigationIcon = {
                 IconButton(onClick = { onNavigate(NavigationEvent.OnNavigateUp) }) {
-                    Icon(painter = painterResource(id = R.drawable.outline_arrow_back), contentDescription = "Back")
+                    Icon(
+                        painter = painterResource(id = R.drawable.outline_arrow_back),
+                        contentDescription = "Back"
+                    )
                 }
             }
         )
@@ -113,8 +123,15 @@ fun BingoFigureSelectionScreen(
                                 for (col in 0..4) {
                                     val cell = state.cardGrid.getOrNull(row)?.getOrNull(col)
                                     val isFree = cell?.isFree == true
-                                    val isCustomSelected = state.customPattern.contains(BingoCellPos(row, col))
-                                    val isHighlighted = state.selectedFigure?.requiredCells?.contains(BingoCellPos(row, col)) == true || isCustomSelected
+                                    val isCustomSelected =
+                                        state.customPattern.contains(BingoCellPos(row, col))
+                                    val isHighlighted =
+                                        state.selectedFigure?.requiredCells?.contains(
+                                            BingoCellPos(
+                                                row,
+                                                col
+                                            )
+                                        ) == true || isCustomSelected
 
                                     Box(
                                         modifier = Modifier
@@ -135,7 +152,12 @@ fun BingoFigureSelectionScreen(
                                                 shape = MaterialTheme.shapes.small
                                             )
                                             .clickable(enabled = !isFree) {
-                                                onEvent(BingoFigureSelectionScreenEvents.OnCustomPatternToggled(row, col))
+                                                onEvent(
+                                                    BingoFigureSelectionScreenEvents.OnCustomPatternToggled(
+                                                        row = row,
+                                                        col = col
+                                                    )
+                                                )
                                             },
                                         contentAlignment = Alignment.Center
                                     ) {
@@ -168,8 +190,10 @@ fun BingoFigureSelectionScreen(
                     )
                 ) {
                     Column(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         state.selectedFigure?.let { figure ->
                             Text(
@@ -217,12 +241,21 @@ fun BingoFigureSelectionScreen(
                     WinCondition.O
                 ).forEach { colCond ->
                     OutlinedButton(
-                        onClick = { onEvent(BingoFigureSelectionScreenEvents.OnFigureSelected(colCond)) },
+                        onClick = {
+                            onEvent(
+                                BingoFigureSelectionScreenEvents.OnFigureSelected(
+                                    colCond
+                                )
+                            )
+                        },
                         colors = ButtonDefaults.outlinedButtonColors(
                             containerColor = if (state.selectedFigure == colCond) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
                         )
                     ) {
-                        Text(colCond.displayName)
+                        Text(
+                            text = colCond.displayName,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
                     }
                 }
             }
@@ -236,7 +269,10 @@ fun BingoFigureSelectionScreen(
                     containerColor = if (state.selectedFigure == WinCondition.FULL_CARD) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
                 )
             ) {
-                Text("Or select Full Card (all 25 cells)")
+                Text(
+                    text = "Or select Full Card (all 25 cells)",
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -264,7 +300,11 @@ fun BingoFigureSelectionScreen(
                 if (state.isUpdating) {
                     CircularProgressIndicator(modifier = Modifier.size(24.dp))
                 } else {
-                    Text("Continue", fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Continue",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
@@ -274,7 +314,7 @@ fun BingoFigureSelectionScreen(
 @Preview(showBackground = true)
 @Composable
 fun BingoFigureSelectionScreenPreview() {
-    MaterialTheme {
+    FlexAppTheme {
         BingoFigureSelectionScreen(
             gameId = 1L,
             onNavigate = {},

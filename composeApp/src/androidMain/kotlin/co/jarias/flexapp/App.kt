@@ -1,13 +1,13 @@
 package co.jarias.flexapp
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.rememberNavController
 import co.jarias.flexapp.ui.navigation.AppNavigation
+import co.jarias.flexapp.ui.theme.FlexAppTheme
 
 @Composable
 fun App() {
-    MaterialTheme {
+    FlexAppTheme {
         val navController = rememberNavController()
         AppNavigation(navController = navController)
     }

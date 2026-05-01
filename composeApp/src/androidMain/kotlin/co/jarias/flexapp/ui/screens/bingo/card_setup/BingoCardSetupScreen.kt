@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
 import co.jarias.flexapp.R
 import co.jarias.flexapp.ui.navigation.NavigationEvent
+import co.jarias.flexapp.ui.theme.FlexAppTheme
 
 private val columnLabels = listOf("B", "I", "N", "G", "O")
 private val columnRanges = listOf(1..15, 16..30, 31..45, 46..60, 61..75)
@@ -43,15 +44,26 @@ fun BingoCardSetupScreen(
             .background(MaterialTheme.colorScheme.background)
     ) {
         TopAppBar(
-            title = { Text("Set Up Your Bingo Card") },
+            title = {
+                Text(
+                    text = "Set Up Your Bingo Card",
+                    style = MaterialTheme.typography.titleLarge,
+                )
+            },
             navigationIcon = {
                 IconButton(onClick = { onNavigate(NavigationEvent.OnNavigateUp) }) {
-                    Icon(painter = painterResource(id = R.drawable.outline_arrow_back), contentDescription = "Back")
+                    Icon(
+                        painter = painterResource(id = R.drawable.outline_arrow_back),
+                        contentDescription = "Back"
+                    )
                 }
             },
             actions = {
                 IconButton(onClick = { onNavigate(NavigationEvent.NavigateToBingoCardScanner(gameId)) }) {
-                    Icon(painter = painterResource(id = R.drawable.outline_photo_camera_24), contentDescription = "Scan Card")
+                    Icon(
+                        painter = painterResource(id = R.drawable.outline_photo_camera_24),
+                        contentDescription = "Scan Card"
+                    )
                 }
             }
         )
@@ -63,7 +75,11 @@ fun BingoCardSetupScreen(
                 .padding(24.dp)
         ) {
             Text(
-                text = "Step ${state.currentColumn + 1} of 5: Fill the ${columnLabels.getOrElse(state.currentColumn) { "" }} column",
+                text = "Step ${state.currentColumn + 1} of 5: Fill the ${
+                    columnLabels.getOrElse(
+                        state.currentColumn
+                    ) { "" }
+                } column",
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
@@ -78,7 +94,13 @@ fun BingoCardSetupScreen(
             val isNColumn = state.currentColumn == 2
             Text(
                 text = buildString {
-                    append("Enter ${if (isNColumn) "4" else "5"} unique numbers between ${columnRanges.getOrElse(state.currentColumn) { 1..15 }.first} and ${columnRanges.getOrElse(state.currentColumn) { 1..15 }.last}.")
+                    append(
+                        "Enter ${if (isNColumn) "4" else "5"} unique numbers between ${
+                            columnRanges.getOrElse(
+                                state.currentColumn
+                            ) { 1..15 }.first
+                        } and ${columnRanges.getOrElse(state.currentColumn) { 1..15 }.last}."
+                    )
                     if (isNColumn) append(" The center is a FREE space.")
                 },
                 style = MaterialTheme.typography.bodyMedium,
@@ -111,7 +133,7 @@ fun BingoCardSetupScreen(
                     TextButton(
                         onClick = { onEvent(BingoCardSetupScreenEvents.OnRandomFill) }
                     ) {
-                        Text("Auto-fill")
+                        Text(text = "Auto-fill", style = MaterialTheme.typography.titleSmall)
                     }
                 }
 
@@ -132,18 +154,35 @@ fun BingoCardSetupScreen(
                         }
                     } else {
                         OutlinedTextField(
-                            value = state.cardNumbers.getOrNull(row)?.getOrNull(state.currentColumn) ?: "",
+                            value = state.cardNumbers.getOrNull(row)?.getOrNull(state.currentColumn)
+                                ?: "",
                             onValueChange = { value ->
-                                onEvent(BingoCardSetupScreenEvents.OnCardNumberChanged(row, state.currentColumn, value))
+                                onEvent(
+                                    BingoCardSetupScreenEvents.OnCardNumberChanged(
+                                        row = row,
+                                        col = state.currentColumn,
+                                        value = value
+                                    )
+                                )
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 4.dp),
+                                .padding(vertical = 2.dp),
                             singleLine = true,
                             textStyle = TextStyle(textAlign = TextAlign.Center),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            placeholder = { Text("Enter number") },
-                            label = { Text("Number ${row + 1}") }
+                            placeholder = {
+                                Text(
+                                    text = "Enter number",
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            },
+                            label = {
+                                Text(
+                                    text = "Number ${row + 1}",
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
                         )
                     }
                 }
@@ -179,7 +218,7 @@ fun BingoCardSetupScreen(
                         .height(48.dp),
                     enabled = state.currentColumn > 0
                 ) {
-                    Text("Previous")
+                    Text(text = "Previous", style = MaterialTheme.typography.titleSmall)
                 }
 
                 Button(
@@ -194,7 +233,10 @@ fun BingoCardSetupScreen(
                             color = MaterialTheme.colorScheme.onPrimary
                         )
                     } else {
-                        Text(if (state.currentColumn == 4) "Save Card" else "Next")
+                        Text(
+                            text = if (state.currentColumn == 4) "Save Card" else "Next",
+                            style = MaterialTheme.typography.titleSmall
+                        )
                     }
                 }
             }
@@ -206,7 +248,7 @@ fun BingoCardSetupScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BingoCardSetupScreenPreviewValidNumbers() {
-    MaterialTheme {
+    FlexAppTheme {
         BingoCardSetupScreen(
             gameId = 1,
             onNavigate = {},
@@ -234,7 +276,7 @@ private fun BingoCardSetupScreenPreviewValidNumbers() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BingoCardSetupScreenPreviewInvalidNumber() {
-    MaterialTheme {
+    FlexAppTheme {
         BingoCardSetupScreen(
             gameId = 1,
             onNavigate = {},
@@ -262,7 +304,7 @@ private fun BingoCardSetupScreenPreviewInvalidNumber() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BingoCardSetupScreenPreviewDuplicateNumber() {
-    MaterialTheme {
+    FlexAppTheme {
         BingoCardSetupScreen(
             gameId = 1,
             onNavigate = {},

@@ -5,7 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,6 +20,7 @@ import co.jarias.flexapp.R
 import co.jarias.flexapp.domain.Game
 import co.jarias.flexapp.domain.WinCondition
 import co.jarias.flexapp.ui.navigation.NavigationEvent
+import co.jarias.flexapp.ui.theme.FlexAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,7 +32,12 @@ fun BingoGameListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Your Bingo Games") },
+                title = {
+                    Text(
+                        text = "Your Bingo Games",
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { onNavigate(NavigationEvent.OnNavigateUp) }) {
                         Icon(
@@ -43,7 +48,7 @@ fun BingoGameListScreen(
                 },
                 actions = {
                     Button(onClick = { onNavigate(NavigationEvent.NavigateToBingoGameSetup) }) {
-                        Text("New Game")
+                        Text(text = "New Game", style = MaterialTheme.typography.titleMedium)
                     }
                 }
             )
@@ -106,7 +111,7 @@ fun BingoGameListScreen(
                         )
                         Spacer(modifier = Modifier.height(24.dp))
                         Button(onClick = { onNavigate(NavigationEvent.NavigateToBingoGameSetup) }) {
-                            Text("Create Game")
+                            Text(text = "Create Game", style = MaterialTheme.typography.titleMedium)
                         }
                     }
                 }
@@ -180,12 +185,12 @@ private fun GameListItem(
                         onDelete()
                     }
                 ) {
-                    Text("Delete")
+                    Text(text = "Delete", style = MaterialTheme.typography.titleSmall)
                 }
             },
             dismissButton = {
                 OutlinedButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel")
+                    Text(text = "Cancel", style = MaterialTheme.typography.titleSmall)
                 }
             }
         )
@@ -195,7 +200,7 @@ private fun GameListItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = if (isPendingSetup) onContinueSetup else onPlay),
-        shape = RoundedCornerShape(12.dp),
+        shape = MaterialTheme.shapes.medium,
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -215,16 +220,16 @@ private fun GameListItem(
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(4.dp))
-                    
+
                     val statusText = when {
                         isPendingSetup -> "Setup incomplete"
                         game.isCompleted -> "Game finished"
                         else -> "In progress • Target: ${game.targetFigure?.displayName ?: "None"}"
                     }
-                    
+
                     val statusColor = when {
                         isPendingSetup -> MaterialTheme.colorScheme.error
-                        game.isCompleted -> MaterialTheme.colorScheme.tertiary
+                        game.isCompleted -> MaterialTheme.colorScheme.secondary
                         else -> MaterialTheme.colorScheme.primary
                     }
 
@@ -237,7 +242,7 @@ private fun GameListItem(
                 if (game.isCompleted) {
                     Surface(
                         color = MaterialTheme.colorScheme.tertiaryContainer,
-                        shape = RoundedCornerShape(8.dp),
+                        shape = MaterialTheme.shapes.small,
                         modifier = Modifier.padding(start = 8.dp)
                     ) {
                         Text(
@@ -269,7 +274,7 @@ private fun GameListItem(
                             .height(36.dp),
                         contentPadding = PaddingValues(4.dp)
                     ) {
-                        Text("Continue Setup", fontSize = 12.sp)
+                        Text(text = "Continue Setup", style = MaterialTheme.typography.titleSmall)
                     }
                 } else if (isReadyToPlay) {
                     OutlinedButton(
@@ -285,12 +290,12 @@ private fun GameListItem(
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Restart", fontSize = 12.sp)
+                        Text(text = "Restart", style = MaterialTheme.typography.titleSmall)
                     }
                 }
 
                 OutlinedButton(
-                    onClick = { showDeleteDialog = true },
+                    onClick = { },
                     modifier = Modifier
                         .weight(1f)
                         .height(36.dp),
@@ -305,7 +310,7 @@ private fun GameListItem(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Delete", fontSize = 12.sp)
+                    Text(text = "Delete", style = MaterialTheme.typography.titleMedium)
                 }
             }
         }
@@ -319,11 +324,13 @@ private fun GameListItem(
 )
 @Composable
 fun BingoGameListScreenPreviewEmpty() {
-    BingoGameListScreen(
-        onNavigate = {},
-        onEvent = {},
-        state = BingoGameListScreenState(isLoading = false)
-    )
+    FlexAppTheme {
+        BingoGameListScreen(
+            onNavigate = {},
+            onEvent = {},
+            state = BingoGameListScreenState(isLoading = false)
+        )
+    }
 }
 
 @Preview(
@@ -333,27 +340,29 @@ fun BingoGameListScreenPreviewEmpty() {
 )
 @Composable
 fun BingoGameListScreenPreviewGames() {
-    BingoGameListScreen(
-        onNavigate = {},
-        onEvent = {},
-        state = BingoGameListScreenState(
-            isLoading = false,
-            games = listOf(
-                Game(
-                    id = 1,
-                    name = "Family Bingo Night",
-                    targetFigure = WinCondition.FULL_CARD,
-                    isCompleted = false,
-                    createdAt = "2024-06-01T12:00:00Z"
-                ),
-                Game(
-                    id = 2,
-                    name = "Office Bingo Challenge",
-                    targetFigure = WinCondition.B,
-                    isCompleted = true,
-                    createdAt = "2024-05-28T18:30:00Z"
+    FlexAppTheme {
+        BingoGameListScreen(
+            onNavigate = {},
+            onEvent = {},
+            state = BingoGameListScreenState(
+                isLoading = false,
+                games = listOf(
+                    Game(
+                        id = 1,
+                        name = "Family Bingo Night",
+                        targetFigure = WinCondition.FULL_CARD,
+                        isCompleted = false,
+                        createdAt = "2024-06-01T12:00:00Z"
+                    ),
+                    Game(
+                        id = 2,
+                        name = "Office Bingo Challenge",
+                        targetFigure = WinCondition.B,
+                        isCompleted = true,
+                        createdAt = "2024-05-28T18:30:00Z"
+                    )
                 )
             )
         )
-    )
+    }
 }

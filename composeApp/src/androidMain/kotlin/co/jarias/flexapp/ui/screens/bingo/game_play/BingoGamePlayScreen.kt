@@ -4,10 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,6 +29,7 @@ import co.jarias.flexapp.domain.Game
 import co.jarias.flexapp.domain.GameState
 import co.jarias.flexapp.domain.WinCondition
 import co.jarias.flexapp.ui.navigation.NavigationEvent
+import co.jarias.flexapp.ui.theme.FlexAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,10 +41,18 @@ fun BingoGamePlayScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(state.gameState?.game?.name ?: "Bingo Game") },
+                title = {
+                    Text(
+                        text = state.gameState?.game?.name ?: "Bingo Game",
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { onNavigate(NavigationEvent.OnNavigateUp) }) {
-                        Icon(painter = painterResource(id = R.drawable.outline_arrow_back), contentDescription = "Back")
+                        Icon(
+                            painter = painterResource(id = R.drawable.outline_arrow_back),
+                            contentDescription = "Back"
+                        )
                     }
                 }
             )
@@ -60,6 +69,7 @@ fun BingoGamePlayScreen(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
+
                 state.errorMessage != null -> {
                     Column(
                         modifier = Modifier
@@ -75,10 +85,15 @@ fun BingoGamePlayScreen(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(onClick = { onEvent(BingoGamePlayScreenEvents.OnRetryClicked) }) {
-                            Text("Retry")
+                            Text(
+                                text = "Retry",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
                 }
+
                 state.gameState != null -> {
                     BingoGameContent(
                         gameState = state.gameState,
@@ -116,7 +131,7 @@ private fun BingoGameContent(
     ) {
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp)
+            shape = MaterialTheme.shapes.medium
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -137,10 +152,11 @@ private fun BingoGameContent(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 val targetCells = gameState.game.targetFigure?.requiredCells?.size ?: 0
-                val markedWinningCells = gameState.game.targetFigure?.requiredCells?.count { (row, col) ->
-                    val cell = gameState.card.grid[row][col]
-                    cell.isFree || (cell.number != null && gameState.markedNumbers.contains(cell.number))
-                } ?: 0
+                val markedWinningCells =
+                    gameState.game.targetFigure?.requiredCells?.count { (row, col) ->
+                        val cell = gameState.card.grid[row][col]
+                        cell.isFree || (cell.number != null && gameState.markedNumbers.contains(cell.number))
+                    } ?: 0
 
                 if (targetCells > 0) {
                     Column(modifier = Modifier.fillMaxWidth()) {
@@ -196,8 +212,12 @@ private fun BingoCardGrid(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(1f)
-            .border(3.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(12.dp))
-            .background(Color.White, RoundedCornerShape(12.dp))
+            .border(
+                width = 3.dp,
+                color = MaterialTheme.colorScheme.primary,
+                shape = MaterialTheme.shapes.medium,
+            )
+            .background(color = Color.White, shape = MaterialTheme.shapes.medium)
             .padding(8.dp)
     ) {
         Row(
@@ -230,7 +250,12 @@ private fun BingoCardGrid(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 row.forEachIndexed { colIndex, cell ->
-                    val isWinningCell = targetFigure?.requiredCells?.contains(BingoCellPos(rowIndex, colIndex)) == true
+                    val isWinningCell = targetFigure?.requiredCells?.contains(
+                        BingoCellPos(
+                            rowIndex,
+                            colIndex
+                        )
+                    ) == true
                     val isMarked = cell.number != null && markedNumbers.contains(cell.number)
                     BingoGameCell(
                         cell = cell,
@@ -270,11 +295,11 @@ private fun BingoGameCell(
     Box(
         modifier = Modifier
             .aspectRatio(1f)
-            .background(backgroundColor, RoundedCornerShape(8.dp))
+            .background(color = backgroundColor, shape = MaterialTheme.shapes.small)
             .border(
                 width = if (isWinningCell && isMarked) 2.dp else 1.dp,
                 color = if (isWinningCell && isMarked) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.outline,
-                shape = RoundedCornerShape(8.dp)
+                shape = MaterialTheme.shapes.small
             )
             .clickable(enabled = !cell.isFree && !isMarked, onClick = onClick),
         contentAlignment = Alignment.Center
@@ -346,8 +371,12 @@ private fun NumberButton(
     Box(
         modifier = Modifier
             .size(32.dp)
-            .background(backgroundColor, RoundedCornerShape(16.dp))
-            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp))
+            .background(color = backgroundColor, shape = MaterialTheme.shapes.large)
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outline,
+                shape = MaterialTheme.shapes.large
+            )
             .clickable(enabled = !isMarked, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
@@ -372,7 +401,7 @@ private fun WinDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            shape = RoundedCornerShape(16.dp)
+            shape = MaterialTheme.shapes.large
         ) {
             Column(
                 modifier = Modifier.padding(24.dp),
@@ -380,36 +409,36 @@ private fun WinDialog(
             ) {
                 Text(
                     text = "🎉 BINGO! 🎉",
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = "Congratulations!",
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "You completed \"$gameName\" with $targetFigure",
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.SpaceAround
                 ) {
                     OutlinedButton(
                         onClick = onDismiss,
                     ) {
-                        Text("Continue")
+                        Text(text = "Continue", style = MaterialTheme.typography.labelMedium)
                     }
                     Button(
                         onClick = onBackToMenu,
                     ) {
-                        Text("Go to Menu")
+                        Text(text = "Go to Menu", style = MaterialTheme.typography.labelMedium)
                     }
                 }
             }
@@ -420,24 +449,29 @@ private fun WinDialog(
 @Preview(showBackground = true, showSystemUi = true, name = "Loading")
 @Composable
 fun BingoGamePlayScreenPreviewLoading() {
-    BingoGamePlayScreen(
-        onNavigate = {},
-        onEvent = {},
-        state = BingoGamePlayScreenState(isLoading = true)
-    )
+    FlexAppTheme {
+        BingoGamePlayScreen(
+            onNavigate = {},
+            onEvent = {},
+            state = BingoGamePlayScreenState(isLoading = true)
+        )
+    }
 }
 
 @Preview(showBackground = true, showSystemUi = true, name = "Error")
 @Composable
 fun BingoGamePlayScreenPreviewError() {
-    BingoGamePlayScreen(
-        onNavigate = {},
-        onEvent = {},
-        state = BingoGamePlayScreenState(
-            isLoading = false,
-            errorMessage = "Failed to load game. Please try again."
+    FlexAppTheme {
+        BingoGamePlayScreen(
+            onNavigate = {},
+            onEvent = {},
+            state = BingoGamePlayScreenState(
+                isLoading = false,
+                errorMessage = "Failed to load game. Please try again."
+            )
         )
-    )
+    }
+
 }
 
 @Preview(showBackground = true, showSystemUi = true, name = "Playing")
@@ -471,14 +505,16 @@ fun BingoGamePlayScreenPreviewPlaying() {
         markedNumbers = markedNumbers,
         isWon = false
     )
-    BingoGamePlayScreen(
-        onNavigate = {},
-        onEvent = {},
-        state = BingoGamePlayScreenState(
-            isLoading = false,
-            gameState = gameState
+    FlexAppTheme {
+        BingoGamePlayScreen(
+            onNavigate = {},
+            onEvent = {},
+            state = BingoGamePlayScreenState(
+                isLoading = false,
+                gameState = gameState
+            )
         )
-    )
+    }
 }
 
 @Preview(showBackground = true, showSystemUi = true, name = "Win Dialog")
@@ -511,13 +547,15 @@ fun BingoGamePlayScreenPreviewWinDialog() {
         markedNumbers = markedNumbers,
         isWon = true
     )
-    BingoGamePlayScreen(
-        onNavigate = {},
-        onEvent = {},
-        state = BingoGamePlayScreenState(
-            isLoading = false,
-            gameState = gameState,
-            showWinDialog = true
+    FlexAppTheme {
+        BingoGamePlayScreen(
+            onNavigate = {},
+            onEvent = {},
+            state = BingoGamePlayScreenState(
+                isLoading = false,
+                gameState = gameState,
+                showWinDialog = true
+            )
         )
-    )
+    }
 }
