@@ -25,15 +25,24 @@ struct WelcomeScreenView: View {
                 
                 Spacer()
                 
-                Button("Get Started") {
+                Button(action: {
                     viewModel.onEvent(.onGetStartedClicked)
                     if let lastTool = viewModel.state.lastTool {
                         onNavigate(.navigateToTool(toolType: lastTool))
                     } else {
                         onNavigate(.navigateToToolSelection)
                     }
+                }) {
+                    if viewModel.state.lastTool != nil {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                    } else {
+                        Text("Get Started")
+                            .fontWeight(.bold)
+                    }
                 }
                 .buttonStyle(.borderedProminent)
+                .disabled(viewModel.state.lastTool != nil)
             }
         }
         .padding()

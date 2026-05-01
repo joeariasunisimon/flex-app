@@ -73,9 +73,9 @@ fun WelcomeScreen(
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.secondary
             ),
-            enabled = !state.isLoading
+            enabled = !state.isLoading && state.lastTool == null
         ) {
-            if (state.isLoading) {
+            if (state.isLoading || state.lastTool != null) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(24.dp),
                     color = MaterialTheme.colorScheme.onSecondary

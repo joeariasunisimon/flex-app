@@ -60,12 +60,11 @@ fun handleNavigationEvent(
         }
 
         is NavigationEvent.NavigateToTool -> {
-            val destination = when (event.toolType) {
-                ToolType.BINGO -> AppDestinations.BINGO_GAME_LIST
-                ToolType.SUDOKU -> AppDestinations.TOOL_SELECTION
-            }
-            navController.navigate(destination) {
+            navController.navigate(AppDestinations.TOOL_SELECTION) {
                 popUpTo(AppDestinations.WELCOME) { inclusive = true }
+            }
+            if (event.toolType == ToolType.BINGO) {
+                navController.navigate(AppDestinations.BINGO_GAME_LIST)
             }
         }
     }
