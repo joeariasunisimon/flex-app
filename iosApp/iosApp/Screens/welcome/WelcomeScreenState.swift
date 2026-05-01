@@ -1,6 +1,8 @@
 import Foundation
+import shared
 
 struct WelcomeScreenState {
-    // Basic welcome state, currently empty or minimal
+    var isLoading: Bool = true
+    var lastTool: ToolType? = nil
     var version: String = "1.0.0"
 }

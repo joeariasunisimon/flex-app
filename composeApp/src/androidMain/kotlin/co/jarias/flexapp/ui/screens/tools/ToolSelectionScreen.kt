@@ -58,7 +58,10 @@ fun ToolSelectionScreen(
                     title = "Bingo",
                     description = "Play the classic bingo game with customizable cards and target figures",
                     iconRes = R.drawable.bingo_icon,
-                    onClick = { onNavigate(NavigationEvent.NavigateToBingoGameList) }
+                    onClick = {
+                        onEvent(ToolSelectionScreenEvents.OnBingoSelected)
+                        onNavigate(NavigationEvent.NavigateToBingoGameList)
+                    }
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))

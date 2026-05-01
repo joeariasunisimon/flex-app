@@ -15,6 +15,7 @@ val commonModule = module {
     single<GameRepository> { GameRepositoryImpl(get()) }
     single<BingoCardRepository> { BingoCardRepositoryImpl(get()) }
     single<MarkedNumberRepository> { MarkedNumberRepositoryImpl(get()) }
+    single { co.jarias.flexapp.data.local.PreferencesManager(get()) }
 
     factory { GenerateRandomNumbersUseCase() }
     factory { GenerateBingoCardUseCase(get()) }

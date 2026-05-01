@@ -37,6 +37,12 @@ class AppNavCoordinator: ObservableObject {
             push(.bingoFigureSelection(gameId: gameId))
         case .navigateToBingoGamePlay(let gameId):
             push(.bingoGamePlay(gameId: gameId))
+        case .navigateToTool(let toolType):
+            if toolType == .bingo {
+                path = [.toolSelection, .bingoGameList]
+            } else {
+                path = [.toolSelection]
+            }
         }
     }
     

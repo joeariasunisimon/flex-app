@@ -65,7 +65,7 @@ FlexApp/
     - Android: `ViewModel` with `StateFlow`.
     - iOS: `ObservableObject` (ViewModel) with `@Published` state, using `FlowWatcher` to collect Kotlin Flows.
 - **Dependency Injection**: Koin (Multiplatform).
-- **Persistence**: SQLDelight (SQLite) with platform-specific drivers.
+- **Persistence**: SQLDelight (SQLite) for database, DataStore (KMP) for preferences.
 - **Navigation**:
     - Android: Jetpack Compose Navigation with `NavHost`.
     - iOS: Coordinator Pattern using `NavigationStack` and `NavigationPath`.

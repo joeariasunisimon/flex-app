@@ -1,4 +1,5 @@
 import SwiftUI
+import shared
 
 struct WelcomeScreenView: View {
     @StateObject private var viewModel = WelcomeScreenViewModel()
@@ -12,21 +13,35 @@ struct WelcomeScreenView: View {
     
     var body: some View {
         VStack {
-            Text("Welcome Screen")
-                .font(.largeTitle)
-            
-            Text("FlexApp Bingo Tracker")
-                .font(.subheadline)
-            
-            Spacer()
-            
-            Button("Get Started") {
-                viewModel.onEvent(.onGetStartedClicked)
-                onNavigate(.navigateToToolSelection)
+            if viewModel.state.isLoading {
+                ProgressView()
+            } else {
+                Text("FlexApp")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                
+                Text("Your Multi-Purpose Gaming Companion")
+                    .font(.subheadline)
+                
+                Spacer()
+                
+                Button("Get Started") {
+                    viewModel.onEvent(.onGetStartedClicked)
+                    if let lastTool = viewModel.state.lastTool {
+                        onNavigate(.navigateToTool(toolType: lastTool))
+                    } else {
+                        onNavigate(.navigateToToolSelection)
+                    }
+                }
+                .buttonStyle(.borderedProminent)
             }
-            .buttonStyle(.borderedProminent)
         }
         .padding()
+        .onChange(of: viewModel.state.isLoading) { _, isLoading in
+            if !isLoading, let lastTool = viewModel.state.lastTool {
+                onNavigate(.navigateToTool(toolType: lastTool))
+            }
+        }
     }
 }
 

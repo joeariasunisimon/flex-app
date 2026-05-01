@@ -35,11 +35,11 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.core)
+            implementation(libs.androidx.datastore.preferences)
         }
         androidMain.dependencies {
             implementation(libs.sqldelight.driver.android)
             implementation(libs.androidx.core.ktx)
-            implementation(libs.androidx.datastore.preferences)
         }
         iosMain.dependencies {
             implementation(libs.sqldelight.driver.native)

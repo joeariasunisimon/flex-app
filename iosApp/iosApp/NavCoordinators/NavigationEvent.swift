@@ -1,4 +1,5 @@
 import Foundation
+import shared
 
 enum NavigationEvent: Equatable {
     case onNavigateUp
@@ -9,4 +10,5 @@ enum NavigationEvent: Equatable {
     case navigateToBingoCardScanner(gameId: Int64)
     case navigateToBingoFigureSelection(gameId: Int64)
     case navigateToBingoGamePlay(gameId: Int64)
+    case navigateToTool(toolType: ToolType)
 }
