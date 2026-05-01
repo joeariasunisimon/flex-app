@@ -41,9 +41,11 @@ import java.util.concurrent.Executors
 fun BingoCardScannerScreen(
     onNavigate: (NavigationEvent) -> Unit,
     onEvent: (BingoCardScannerScreenEvents) -> Unit,
-    state: BingoCardScannerScreenState
+    state: BingoCardScannerScreenState,
+    isPermissionGrantedOverride: Boolean? = null
 ) {
     val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
+    val isPermissionGranted = isPermissionGrantedOverride ?: cameraPermissionState.status.isGranted
 
     LaunchedEffect(state.cardSaved) {
         if (state.cardSaved) {
@@ -71,7 +73,7 @@ fun BingoCardScannerScreen(
             )
         }
     ) { padding ->
-        if (cameraPermissionState.status.isGranted) {
+        if (isPermissionGranted) {
             Box(
                 modifier = Modifier
                     .padding(padding)
@@ -170,7 +172,7 @@ fun BingoCardScannerScreen(
                 Text("Camera permission is required to scan the card.")
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(onClick = { cameraPermissionState.launchPermissionRequest() }) {
-                    Text("Grant Permission")
+                    Text(text = "Grant Permission", style = MaterialTheme.typography.titleMedium)
                 }
             }
         }
@@ -306,7 +308,8 @@ fun BingoCardScannerScreenScanningPreview() {
             state = BingoCardScannerScreenState(
                 gameId = 1L,
                 detectedGrid = null
-            )
+            ),
+            isPermissionGrantedOverride = true
         )
     }
 }
@@ -328,7 +331,24 @@ fun BingoCardScannerScreenDetectedPreview() {
             state = BingoCardScannerScreenState(
                 gameId = 1L,
                 detectedGrid = dummyGrid
-            )
+            ),
+            isPermissionGrantedOverride = true
+        )
+    }
+}
+
+@ComposePreview(showBackground = true)
+@Composable
+fun BingoCardScannerScreenPermissionDeniedPreview() {
+    FlexAppTheme {
+        BingoCardScannerScreen(
+            onNavigate = {},
+            onEvent = {},
+            state = BingoCardScannerScreenState(
+                gameId = 1L,
+                detectedGrid = null
+            ),
+            isPermissionGrantedOverride = false
         )
     }
 }
