@@ -248,6 +248,7 @@ fun BingoFigureSelectionScreen(
                                 )
                             )
                         },
+                        shape = MaterialTheme.shapes.extraLarge,
                         colors = ButtonDefaults.outlinedButtonColors(
                             containerColor = if (state.selectedFigure == colCond) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
                         )
@@ -265,6 +266,7 @@ fun BingoFigureSelectionScreen(
             OutlinedButton(
                 onClick = { onEvent(BingoFigureSelectionScreenEvents.OnFigureSelected(WinCondition.FULL_CARD)) },
                 modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.extraLarge,
                 colors = ButtonDefaults.outlinedButtonColors(
                     containerColor = if (state.selectedFigure == WinCondition.FULL_CARD) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
                 )
@@ -294,7 +296,10 @@ fun BingoFigureSelectionScreen(
 
             Button(
                 onClick = { onEvent(BingoFigureSelectionScreenEvents.OnContinue) },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = MaterialTheme.shapes.extraLarge,
                 enabled = (state.selectedFigure != null || state.customPattern.isNotEmpty()) && !state.isUpdating
             ) {
                 if (state.isUpdating) {

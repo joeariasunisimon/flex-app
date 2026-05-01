@@ -69,6 +69,7 @@ fun WelcomeScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
+            shape = MaterialTheme.shapes.extraLarge,
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.secondary
             ),

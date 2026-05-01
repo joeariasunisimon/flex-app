@@ -133,7 +133,11 @@ fun BingoCardSetupScreen(
                     TextButton(
                         onClick = { onEvent(BingoCardSetupScreenEvents.OnRandomFill) }
                     ) {
-                        Text(text = "Auto-fill", style = MaterialTheme.typography.titleSmall)
+                        Text(
+                            text = "Auto-fill",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
                     }
                 }
 
@@ -215,7 +219,8 @@ fun BingoCardSetupScreen(
                     onClick = { onEvent(BingoCardSetupScreenEvents.OnPreviousColumn) },
                     modifier = Modifier
                         .weight(1f)
-                        .height(48.dp),
+                        .height(56.dp),
+                    shape = MaterialTheme.shapes.extraLarge,
                     enabled = state.currentColumn > 0
                 ) {
                     Text(text = "Previous", style = MaterialTheme.typography.titleSmall)
@@ -225,7 +230,8 @@ fun BingoCardSetupScreen(
                     onClick = { onEvent(BingoCardSetupScreenEvents.OnNextColumn) },
                     modifier = Modifier
                         .weight(1f)
-                        .height(48.dp)
+                        .height(56.dp),
+                    shape = MaterialTheme.shapes.extraLarge
                 ) {
                     if (state.isSaving) {
                         CircularProgressIndicator(

@@ -84,7 +84,10 @@ fun BingoGamePlayScreen(
                             textAlign = TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { onEvent(BingoGamePlayScreenEvents.OnRetryClicked) }) {
+                        Button(
+                            onClick = { onEvent(BingoGamePlayScreenEvents.OnRetryClicked) },
+                            shape = MaterialTheme.shapes.extraLarge
+                        ) {
                             Text(
                                 text = "Retry",
                                 style = MaterialTheme.typography.titleMedium,
@@ -432,11 +435,13 @@ private fun WinDialog(
                 ) {
                     OutlinedButton(
                         onClick = onDismiss,
+                        shape = MaterialTheme.shapes.extraLarge
                     ) {
                         Text(text = "Continue", style = MaterialTheme.typography.labelMedium)
                     }
                     Button(
                         onClick = onBackToMenu,
+                        shape = MaterialTheme.shapes.extraLarge
                     ) {
                         Text(text = "Go to Menu", style = MaterialTheme.typography.labelMedium)
                     }

@@ -101,7 +101,8 @@ fun BingoGameSetupScreen(
                 onClick = { onEvent(BingoGameSetupScreenEvents.OnCreateGameClicked) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp),
+                    .height(56.dp),
+                shape = MaterialTheme.shapes.extraLarge,
                 enabled = !state.isLoading
             ) {
                 if (state.isLoading) {

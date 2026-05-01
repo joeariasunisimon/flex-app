@@ -47,12 +47,16 @@ fun BingoGameListScreen(
                     }
                 },
                 actions = {
-                    Button(onClick = { onNavigate(NavigationEvent.NavigateToBingoGameSetup) }) {
+                    Button(
+                        onClick = { onNavigate(NavigationEvent.NavigateToBingoGameSetup) },
+                        shape = MaterialTheme.shapes.extraLarge
+                    ) {
                         Text(text = "New Game", style = MaterialTheme.typography.titleMedium)
                     }
                 }
             )
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -83,7 +87,10 @@ fun BingoGameListScreen(
                             textAlign = TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { onEvent(BingoGameListScreenEvents.OnRetryClicked) }) {
+                        Button(
+                            onClick = { onEvent(BingoGameListScreenEvents.OnRetryClicked) },
+                            shape = MaterialTheme.shapes.extraLarge
+                        ) {
                             Text("Retry")
                         }
                     }
@@ -110,7 +117,10 @@ fun BingoGameListScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.height(24.dp))
-                        Button(onClick = { onNavigate(NavigationEvent.NavigateToBingoGameSetup) }) {
+                        Button(
+                            onClick = { onNavigate(NavigationEvent.NavigateToBingoGameSetup) },
+                            shape = MaterialTheme.shapes.extraLarge
+                        ) {
                             Text(text = "Create Game", style = MaterialTheme.typography.titleMedium)
                         }
                     }
@@ -176,20 +186,25 @@ private fun GameListItem(
 
     if (showDeleteDialog) {
         AlertDialog(
-            onDismissRequest = { },
+            onDismissRequest = { showDeleteDialog = false },
             title = { Text("Delete Game?") },
             text = { Text("Are you sure you want to delete \"${game.name}\"? This cannot be undone.") },
             confirmButton = {
                 Button(
                     onClick = {
                         onDelete()
-                    }
+                        showDeleteDialog = false
+                    },
+                    shape = MaterialTheme.shapes.extraLarge
                 ) {
                     Text(text = "Delete", style = MaterialTheme.typography.titleSmall)
                 }
             },
             dismissButton = {
-                OutlinedButton(onClick = { showDeleteDialog = false }) {
+                OutlinedButton(
+                    onClick = { showDeleteDialog = false },
+                    shape = MaterialTheme.shapes.extraLarge
+                ) {
                     Text(text = "Cancel", style = MaterialTheme.typography.titleSmall)
                 }
             }
@@ -272,6 +287,7 @@ private fun GameListItem(
                         modifier = Modifier
                             .weight(1f)
                             .height(36.dp),
+                        shape = MaterialTheme.shapes.extraLarge,
                         contentPadding = PaddingValues(4.dp)
                     ) {
                         Text(text = "Continue Setup", style = MaterialTheme.typography.titleSmall)
@@ -282,6 +298,7 @@ private fun GameListItem(
                         modifier = Modifier
                             .weight(1f)
                             .height(36.dp),
+                        shape = MaterialTheme.shapes.extraLarge,
                         contentPadding = PaddingValues(4.dp)
                     ) {
                         Image(
@@ -295,10 +312,11 @@ private fun GameListItem(
                 }
 
                 OutlinedButton(
-                    onClick = { },
+                    onClick = { showDeleteDialog = true },
                     modifier = Modifier
                         .weight(1f)
                         .height(36.dp),
+                    shape = MaterialTheme.shapes.extraLarge,
                     contentPadding = PaddingValues(4.dp),
                     colors = ButtonDefaults.outlinedButtonColors(
                         contentColor = MaterialTheme.colorScheme.error
