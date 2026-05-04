@@ -30,6 +30,9 @@ class AppNavCoordinator: ObservableObject {
         case .navigateToBingoGameSetup:
             push(.bingoGameSetup)
         case .navigateToBingoCardSetup(let gameId):
+            if path.last == .bingoGameSetup {
+                path.removeLast()
+            }
             push(.bingoCardSetup(gameId: gameId))
         case .navigateToBingoCardScanner(let gameId):
             push(.bingoCardScanner(gameId: gameId))
