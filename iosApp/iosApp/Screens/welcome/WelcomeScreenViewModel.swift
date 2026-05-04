@@ -3,15 +3,15 @@ import shared
 
 class WelcomeScreenViewModel: ObservableObject {
     @Published var state = WelcomeScreenState()
-    private let preferencesManager: PreferencesManager
+    private let getLastToolUseCase: GetLastToolUseCase
     
     init() {
-        self.preferencesManager = KoinHelper().preferencesManager
+        self.getLastToolUseCase = KoinHelper().getLastToolUseCase
         loadLastTool()
     }
     
     private func loadLastTool() {
-        preferencesManager.getLastTool { [weak self] tool, error in
+        getLastToolUseCase.invoke { [weak self] tool, error in
             DispatchQueue.main.async {
                 self?.state.lastTool = tool
                 self?.state.isLoading = false

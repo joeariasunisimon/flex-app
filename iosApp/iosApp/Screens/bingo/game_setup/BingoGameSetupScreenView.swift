@@ -8,7 +8,8 @@ struct BingoGameSetupScreenView: View {
     init(coordinator: AppNavCoordinator?, viewModel: BingoGameSetupScreenViewModel? = nil) {
         let helper = KoinHelper()
         let vm = viewModel ?? BingoGameSetupScreenViewModel(
-            createGameUseCase: helper.createGameUseCase
+            createGameUseCase: helper.createGameUseCase,
+            addPendingSetupGameIdUseCase: helper.addPendingSetupGameIdUseCase
         )
         _viewModel = StateObject(wrappedValue: vm)
         self.onNavigate = { event in
@@ -111,7 +112,11 @@ struct BingoGameSetupScreenView: View {
 }
 
 #Preview("With Game Name") {
-    let vm = BingoGameSetupScreenViewModel(createGameUseCase: KoinHelper().createGameUseCase)
+    let helper = KoinHelper()
+    let vm = BingoGameSetupScreenViewModel(
+        createGameUseCase: helper.createGameUseCase,
+        addPendingSetupGameIdUseCase: helper.addPendingSetupGameIdUseCase
+    )
     vm.state.name = "Family Bingo Night"
     return NavigationStack {
         BingoGameSetupScreenView(coordinator: nil, viewModel: vm)
@@ -119,7 +124,11 @@ struct BingoGameSetupScreenView: View {
 }
 
 #Preview("Loading") {
-    let vm = BingoGameSetupScreenViewModel(createGameUseCase: KoinHelper().createGameUseCase)
+    let helper = KoinHelper()
+    let vm = BingoGameSetupScreenViewModel(
+        createGameUseCase: helper.createGameUseCase,
+        addPendingSetupGameIdUseCase: helper.addPendingSetupGameIdUseCase
+    )
     vm.state.name = "Test Game"
     vm.state.isCreating = true
     return NavigationStack {
@@ -128,7 +137,11 @@ struct BingoGameSetupScreenView: View {
 }
 
 #Preview("Error") {
-    let vm = BingoGameSetupScreenViewModel(createGameUseCase: KoinHelper().createGameUseCase)
+    let helper = KoinHelper()
+    let vm = BingoGameSetupScreenViewModel(
+        createGameUseCase: helper.createGameUseCase,
+        addPendingSetupGameIdUseCase: helper.addPendingSetupGameIdUseCase
+    )
     vm.state.name = "Test Game"
     vm.state.error = "Failed to create game. Please try again."
     return NavigationStack {

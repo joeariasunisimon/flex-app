@@ -6,9 +6,9 @@ class BingoGameListScreenViewModel: ObservableObject {
     private let getAllGamesUseCase: GetAllGamesUseCase
     private let restartGameUseCase: RestartGameUseCase
     private let dropGameUseCase: DropGameUseCase
-    private let bingoCardRepository: BingoCardRepository
-    private let gameRepository: GameRepository
-    private let preferencesManager: PreferencesManager
+    private let checkGameSetupStatusUseCase: CheckGameSetupStatusUseCase
+    private let getPendingSetupGameIdsUseCase: GetPendingSetupGameIdsUseCase
+    private let removePendingSetupGameIdUseCase: RemovePendingSetupGameIdUseCase
     
     @Published var state = BingoGameListScreenState()
     
@@ -18,16 +18,16 @@ class BingoGameListScreenViewModel: ObservableObject {
         getAllGamesUseCase: GetAllGamesUseCase,
         restartGameUseCase: RestartGameUseCase,
         dropGameUseCase: DropGameUseCase,
-        bingoCardRepository: BingoCardRepository,
-        gameRepository: GameRepository,
-        preferencesManager: PreferencesManager
+        checkGameSetupStatusUseCase: CheckGameSetupStatusUseCase,
+        getPendingSetupGameIdsUseCase: GetPendingSetupGameIdsUseCase,
+        removePendingSetupGameIdUseCase: RemovePendingSetupGameIdUseCase
     ) {
         self.getAllGamesUseCase = getAllGamesUseCase
         self.restartGameUseCase = restartGameUseCase
         self.dropGameUseCase = dropGameUseCase
-        self.bingoCardRepository = bingoCardRepository
-        self.gameRepository = gameRepository
-        self.preferencesManager = preferencesManager
+        self.checkGameSetupStatusUseCase = checkGameSetupStatusUseCase
+        self.getPendingSetupGameIdsUseCase = getPendingSetupGameIdsUseCase
+        self.removePendingSetupGameIdUseCase = removePendingSetupGameIdUseCase
         
         observeGames()
         refreshPendingIds()
@@ -40,7 +40,6 @@ class BingoGameListScreenViewModel: ObservableObject {
     private func observeGames() {
         state.isLoading = true
         let helper = KoinHelper()
-        // We use a specialized watcher to handle the Flow collection on iOS
         let watcher = helper.getAllGamesWatcher()
         gamesWatcher = watcher
         watcher.watch { [weak self] games in
@@ -54,7 +53,7 @@ class BingoGameListScreenViewModel: ObservableObject {
     }
     
     private func refreshPendingIds() {
-        preferencesManager.getPendingSetupGameIds { [weak self] ids, error in
+        getPendingSetupGameIdsUseCase.invoke { [weak self] ids, error in
             if let ids = ids {
                 DispatchQueue.main.async {
                     self?.state.pendingSetupGameIds = ids.map { $0.int64Value }
@@ -82,21 +81,20 @@ class BingoGameListScreenViewModel: ObservableObject {
     }
     
     private func continueSetup(gameId: Int64) {
-        bingoCardRepository.getCardsByGameId(gameId: gameId) { [weak self] cards, error in
-            if let cards = cards {
-                if cards.isEmpty {
-                    DispatchQueue.main.async { self?.state.continueToCardSetup = gameId }
-                } else {
-                    self?.gameRepository.getGameById(gameId: gameId) { game, error in
-                        if let game = game {
-                            if game.targetFigure == nil {
-                                DispatchQueue.main.async { self?.state.continueToFigureSelection = gameId }
-                            } else {
-                                self?.preferencesManager.removePendingSetupGameId(gameId: gameId) { error in
-                                    DispatchQueue.main.async { self?.state.continueToGamePlay = gameId }
-                                }
-                            }
-                        }
+        checkGameSetupStatusUseCase.invoke(gameId: gameId) { [weak self] status, error in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                if let status = status {
+                    switch status {
+                    case is GameSetupStatus.CardSetupRequired:
+                        self.state.continueToCardSetup = gameId
+                    case is GameSetupStatus.FigureSelectionRequired:
+                        self.state.continueToFigureSelection = gameId
+                    case is GameSetupStatus.SetupComplete:
+                        self.state.continueToGamePlay = gameId
+                        self.refreshPendingIds()
+                    default:
+                        break
                     }
                 }
             }
@@ -105,13 +103,17 @@ class BingoGameListScreenViewModel: ObservableObject {
     
     private func restartGame(gameId: Int64) {
         restartGameUseCase.invoke(gameId: gameId) { [weak self] error in
-            self?.refreshPendingIds()
+            self?.removePendingSetupGameIdUseCase.invoke(gameId: gameId) { error in
+                self?.refreshPendingIds()
+            }
         }
     }
     
     private func deleteGame(gameId: Int64) {
         dropGameUseCase.invoke(gameId: gameId) { [weak self] error in
-            self?.refreshPendingIds()
+            self?.removePendingSetupGameIdUseCase.invoke(gameId: gameId) { error in
+                self?.refreshPendingIds()
+            }
         }
     }
 }

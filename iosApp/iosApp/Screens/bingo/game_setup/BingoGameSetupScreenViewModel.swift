@@ -3,11 +3,13 @@ import shared
 
 class BingoGameSetupScreenViewModel: ObservableObject {
     private let createGameUseCase: CreateGameUseCase
+    private let addPendingSetupGameIdUseCase: AddPendingSetupGameIdUseCase
     
     @Published var state = BingoGameSetupScreenState()
     
-    init(createGameUseCase: CreateGameUseCase) {
+    init(createGameUseCase: CreateGameUseCase, addPendingSetupGameIdUseCase: AddPendingSetupGameIdUseCase) {
         self.createGameUseCase = createGameUseCase
+        self.addPendingSetupGameIdUseCase = addPendingSetupGameIdUseCase
     }
     
     func onEvent(_ event: BingoGameSetupScreenEvents) {
@@ -22,11 +24,16 @@ class BingoGameSetupScreenViewModel: ObservableObject {
     private func createGame() {
         state.isCreating = true
         createGameUseCase.invoke(name: state.name, targetFigure: nil) { game, error in
-            DispatchQueue.main.async {
-                self.state.isCreating = false
-                if let game = game {
-                    self.state.createdGameId = game.id?.int64Value
-                } else if let error = error {
+            if let gameId = game?.id?.int64Value {
+                self.addPendingSetupGameIdUseCase.invoke(gameId: gameId) { error in
+                    DispatchQueue.main.async {
+                        self.state.isCreating = false
+                        self.state.createdGameId = gameId
+                    }
+                }
+            } else if let error = error {
+                DispatchQueue.main.async {
+                    self.state.isCreating = false
                     self.state.error = error.localizedDescription
                 }
             }

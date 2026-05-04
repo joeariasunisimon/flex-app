@@ -41,6 +41,18 @@ class GenerateBingoCardUseCase(private val bingoCardRepository: BingoCardReposit
     }
 }
 
+class SaveBingoCardUseCase(private val bingoCardRepository: BingoCardRepository) {
+    suspend operator fun invoke(card: BingoCard) {
+        bingoCardRepository.insertCard(card)
+    }
+}
+
+class GetBingoCardUseCase(private val bingoCardRepository: BingoCardRepository) {
+    suspend operator fun invoke(gameId: Long): BingoCard? {
+        return bingoCardRepository.getCardByGameId(gameId)
+    }
+}
+
 class MarkNumberUseCase(
     private val markedNumberRepository: MarkedNumberRepository,
     private val bingoCardRepository: BingoCardRepository

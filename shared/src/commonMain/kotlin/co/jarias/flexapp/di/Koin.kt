@@ -19,6 +19,8 @@ val commonModule = module {
 
     factory { GenerateRandomNumbersUseCase() }
     factory { GenerateBingoCardUseCase(get()) }
+    factory { SaveBingoCardUseCase(get()) }
+    factory { GetBingoCardUseCase(get()) }
     factory { MarkNumberUseCase(get(), get()) }
     factory { CheckWinConditionUseCase(get(), get()) }
     factory { CompleteGameUseCase(get(), get()) }
@@ -29,6 +31,19 @@ val commonModule = module {
     factory { RestartGameUseCase(get(), get()) }
     factory { DropGameUseCase(get(), get(), get()) }
     factory { UpdateGameNameUseCase(get()) }
+    factory { UpdateGameFigureUseCase(get(), get()) }
+    factory { CheckGameSetupStatusUseCase(get(), get(), get()) }
+
+    // Preferences Use Cases
+    factory { GetLastToolUseCase(get()) }
+    factory { SetLastToolUseCase(get()) }
+    factory { GetPendingSetupGameIdsUseCase(get()) }
+    factory { AddPendingSetupGameIdUseCase(get()) }
+    factory { RemovePendingSetupGameIdUseCase(get()) }
+    factory { ClearPendingSetupGameIdsUseCase(get()) }
+    factory { GetCardSetupStateUseCase(get()) }
+    factory { SaveCardSetupStateUseCase(get()) }
+    factory { ClearCardSetupStateUseCase(get()) }
 }
 
 fun initKoin(appDeclaration: KoinAppDeclaration) =

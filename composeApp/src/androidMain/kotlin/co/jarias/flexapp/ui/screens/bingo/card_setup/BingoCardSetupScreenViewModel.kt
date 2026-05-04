@@ -3,11 +3,9 @@ package co.jarias.flexapp.ui.screens.bingo.card_setup
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.jarias.flexapp.data.local.CardSetupState
-import co.jarias.flexapp.data.local.PreferencesManager
-import co.jarias.flexapp.data.repository.BingoCardRepository
 import co.jarias.flexapp.domain.BingoCard
 import co.jarias.flexapp.domain.BingoCell
-import co.jarias.flexapp.domain.usecase.GenerateRandomNumbersUseCase
+import co.jarias.flexapp.domain.usecase.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,8 +14,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class BingoCardSetupScreenViewModel(
-    private val bingoCardRepository: BingoCardRepository,
-    private val preferencesManager: PreferencesManager? = null,
+    private val getBingoCardUseCase: GetBingoCardUseCase,
+    private val saveBingoCardUseCase: SaveBingoCardUseCase,
+    private val getCardSetupStateUseCase: GetCardSetupStateUseCase,
+    private val saveCardSetupStateUseCase: SaveCardSetupStateUseCase,
+    private val clearCardSetupStateUseCase: ClearCardSetupStateUseCase,
     private val gameId: Long = 0
 ) : ViewModel() {
 
@@ -49,7 +50,7 @@ class BingoCardSetupScreenViewModel(
 
     private fun loadCardSetupStateFromPreferences() {
         viewModelScope.launch {
-            val savedState = preferencesManager?.getCardSetupState(gameId)
+            val savedState = getCardSetupStateUseCase(gameId)
             savedState?.let {
                 _state.value = _state.value.copy(
                     currentColumn = it.currentColumn,
@@ -61,7 +62,7 @@ class BingoCardSetupScreenViewModel(
 
     private fun saveCardSetupStateToPreferences() {
         viewModelScope.launch {
-            preferencesManager?.setCardSetupState(
+            saveCardSetupStateUseCase(
                 gameId,
                 CardSetupState(
                     currentColumn = _state.value.currentColumn,
@@ -73,7 +74,7 @@ class BingoCardSetupScreenViewModel(
 
     private fun clearCardSetupStateInPreferences() {
         viewModelScope.launch {
-            preferencesManager?.clearCardSetupState(gameId)
+            clearCardSetupStateUseCase(gameId)
         }
     }
 
@@ -83,7 +84,7 @@ class BingoCardSetupScreenViewModel(
                 _state.value = _state.value.copy(isLoading = true, gameId = gameId)
 
                 val existingCard = withContext(Dispatchers.IO) {
-                    bingoCardRepository.getCardByGameId(gameId)
+                    getBingoCardUseCase(gameId)
                 }
 
                 if (existingCard != null) {
@@ -228,7 +229,7 @@ class BingoCardSetupScreenViewModel(
                 val card = BingoCard(id = null, gameId = currentState.gameId, grid = grid)
 
                 withContext(Dispatchers.IO) {
-                    bingoCardRepository.insertCard(card)
+                    saveBingoCardUseCase(card)
                 }
 
                 clearCardSetupStateInPreferences()

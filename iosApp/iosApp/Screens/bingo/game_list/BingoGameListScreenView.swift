@@ -11,9 +11,9 @@ struct BingoGameListScreenView: View {
             getAllGamesUseCase: helper.getAllGamesUseCase,
             restartGameUseCase: helper.restartGameUseCase,
             dropGameUseCase: helper.dropGameUseCase,
-            bingoCardRepository: helper.bingoCardRepository,
-            gameRepository: helper.gameRepository,
-            preferencesManager: helper.preferencesManager
+            checkGameSetupStatusUseCase: helper.checkGameSetupStatusUseCase,
+            getPendingSetupGameIdsUseCase: helper.getPendingSetupGameIdsUseCase,
+            removePendingSetupGameIdUseCase: helper.removePendingSetupGameIdUseCase
         ))
         self.onNavigate = { event in
             coordinator.handleNavigationEvent(event)

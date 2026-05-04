@@ -2,12 +2,7 @@ package co.jarias.flexapp.ui.screens.bingo.game_list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import co.jarias.flexapp.data.local.PreferencesManager
-import co.jarias.flexapp.data.repository.BingoCardRepository
-import co.jarias.flexapp.data.repository.GameRepository
-import co.jarias.flexapp.domain.usecase.DropGameUseCase
-import co.jarias.flexapp.domain.usecase.GetAllGamesUseCase
-import co.jarias.flexapp.domain.usecase.RestartGameUseCase
+import co.jarias.flexapp.domain.usecase.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -17,9 +12,9 @@ class BingoGameListScreenViewModel(
     private val getAllGamesUseCase: GetAllGamesUseCase,
     private val restartGameUseCase: RestartGameUseCase,
     private val dropGameUseCase: DropGameUseCase,
-    private val bingoCardRepository: BingoCardRepository,
-    private val gameRepository: GameRepository,
-    private val preferencesManager: PreferencesManager? = null
+    private val checkGameSetupStatusUseCase: CheckGameSetupStatusUseCase,
+    private val getPendingSetupGameIdsUseCase: GetPendingSetupGameIdsUseCase,
+    private val removePendingSetupGameIdUseCase: RemovePendingSetupGameIdUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BingoGameListScreenState())
@@ -44,7 +39,7 @@ class BingoGameListScreenViewModel(
 
     private fun refreshPendingIds() {
         viewModelScope.launch {
-            val pendingIds = preferencesManager?.getPendingSetupGameIds() ?: emptyList()
+            val pendingIds = getPendingSetupGameIdsUseCase()
             _state.update { it.copy(pendingSetupGameIds = pendingIds) }
         }
     }
@@ -72,21 +67,16 @@ class BingoGameListScreenViewModel(
     private fun continueSetup(gameId: Long) {
         viewModelScope.launch {
             try {
-                val cards = withContext(Dispatchers.IO) {
-                    bingoCardRepository.getCardsByGameId(gameId)
-                }
-
-                if (cards.isEmpty()) {
-                    _state.value = _state.value.copy(continueToCardSetup = gameId)
-                } else {
-                    val game = withContext(Dispatchers.IO) {
-                        gameRepository.getGameById(gameId)
+                when (checkGameSetupStatusUseCase(gameId)) {
+                    GameSetupStatus.CardSetupRequired -> {
+                        _state.value = _state.value.copy(continueToCardSetup = gameId)
                     }
-                    if (game?.targetFigure == null) {
+                    GameSetupStatus.FigureSelectionRequired -> {
                         _state.value = _state.value.copy(continueToFigureSelection = gameId)
-                    } else {
-                        preferencesManager?.removePendingSetupGameId(gameId)
+                    }
+                    GameSetupStatus.SetupComplete -> {
                         _state.value = _state.value.copy(continueToGamePlay = gameId)
+                        refreshPendingIds()
                     }
                 }
             } catch (e: Exception) {
@@ -101,7 +91,7 @@ class BingoGameListScreenViewModel(
                 withContext(Dispatchers.IO) {
                     restartGameUseCase(gameId)
                 }
-                preferencesManager?.removePendingSetupGameId(gameId)
+                removePendingSetupGameIdUseCase(gameId)
                 refreshPendingIds()
             } catch (e: Exception) {
                 _state.value = _state.value.copy(
@@ -117,7 +107,7 @@ class BingoGameListScreenViewModel(
                 withContext(Dispatchers.IO) {
                     dropGameUseCase(gameId)
                 }
-                preferencesManager?.removePendingSetupGameId(gameId)
+                removePendingSetupGameIdUseCase(gameId)
                 refreshPendingIds()
             } catch (e: Exception) {
                 _state.value = _state.value.copy(

@@ -3,23 +3,18 @@ import shared
 
 class ToolSelectionScreenViewModel: ObservableObject {
     @Published var state = ToolSelectionScreenState()
-    private let preferencesManager: PreferencesManager
+    private let setLastToolUseCase: SetLastToolUseCase
     
     init() {
-        self.preferencesManager = KoinHelper().preferencesManager
+        self.setLastToolUseCase = KoinHelper().setLastToolUseCase
     }
     
     func onEvent(_ event: ToolSelectionScreenEvents) {
         switch event {
         case .onToolSelected(let tool):
-            if tool == "Bingo" {
-                preferencesManager.setLastTool(tool: .bingo) { error in
-                    // Handle error if needed
-                }
-            } else if tool == "Sudoku" {
-                preferencesManager.setLastTool(tool: .sudoku) { error in
-                    // Handle error if needed
-                }
+            let toolType: ToolType = tool == "Bingo" ? .bingo : .sudoku
+            setLastToolUseCase.invoke(tool: toolType) { error in
+                // Handle error if needed
             }
         }
     }

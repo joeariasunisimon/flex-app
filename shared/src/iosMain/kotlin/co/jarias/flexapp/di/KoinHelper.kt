@@ -19,7 +19,22 @@ class KoinHelper : KoinComponent {
     val checkWinConditionUseCase: CheckWinConditionUseCase by inject()
     val completeGameUseCase: CompleteGameUseCase by inject()
     val generateBingoCardUseCase: GenerateBingoCardUseCase by inject()
+    val saveBingoCardUseCase: SaveBingoCardUseCase by inject()
+    val getBingoCardUseCase: GetBingoCardUseCase by inject()
     val updateGameNameUseCase: UpdateGameNameUseCase by inject()
+    val updateGameFigureUseCase: UpdateGameFigureUseCase by inject()
+    val checkGameSetupStatusUseCase: CheckGameSetupStatusUseCase by inject()
+
+    // Preferences Use Cases
+    val getLastToolUseCase: GetLastToolUseCase by inject()
+    val setLastToolUseCase: SetLastToolUseCase by inject()
+    val getPendingSetupGameIdsUseCase: GetPendingSetupGameIdsUseCase by inject()
+    val addPendingSetupGameIdUseCase: AddPendingSetupGameIdUseCase by inject()
+    val removePendingSetupGameIdUseCase: RemovePendingSetupGameIdUseCase by inject()
+    val clearPendingSetupGameIdsUseCase: ClearPendingSetupGameIdsUseCase by inject()
+    val getCardSetupStateUseCase: GetCardSetupStateUseCase by inject()
+    val saveCardSetupStateUseCase: SaveCardSetupStateUseCase by inject()
+    val clearCardSetupStateUseCase: ClearCardSetupStateUseCase by inject()
 
     fun getAllGamesWatcher() = co.jarias.flexapp.util.FlowWatcher(getAllGamesUseCase())
 }

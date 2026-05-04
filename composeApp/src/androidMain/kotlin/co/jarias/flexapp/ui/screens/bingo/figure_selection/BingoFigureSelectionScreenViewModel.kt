@@ -2,11 +2,10 @@ package co.jarias.flexapp.ui.screens.bingo.figure_selection
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import co.jarias.flexapp.data.local.PreferencesManager
-import co.jarias.flexapp.data.repository.BingoCardRepository
-import co.jarias.flexapp.data.repository.GameRepository
 import co.jarias.flexapp.domain.BingoCellPos
 import co.jarias.flexapp.domain.WinCondition
+import co.jarias.flexapp.domain.usecase.GetBingoCardUseCase
+import co.jarias.flexapp.domain.usecase.UpdateGameFigureUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,9 +14,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class BingoFigureSelectionScreenViewModel(
-    private val bingoCardRepository: BingoCardRepository,
-    private val gameRepository: GameRepository,
-    private val preferencesManager: PreferencesManager? = null,
+    private val getBingoCardUseCase: GetBingoCardUseCase,
+    private val updateGameFigureUseCase: UpdateGameFigureUseCase,
     private val gameId: Long = 0
 ) : ViewModel() {
 
@@ -35,13 +33,13 @@ class BingoFigureSelectionScreenViewModel(
             try {
                 _state.value = _state.value.copy(isLoading = true, gameId = gameId)
 
-                val cards = withContext(Dispatchers.IO) {
-                    bingoCardRepository.getCardsByGameId(gameId)
+                val card = withContext(Dispatchers.IO) {
+                    getBingoCardUseCase(gameId)
                 }
 
-                if (cards.isNotEmpty()) {
+                if (card != null) {
                     _state.value = _state.value.copy(
-                        cardGrid = cards.first().grid,
+                        cardGrid = card.grid,
                         isLoading = false
                     )
                 } else {
@@ -102,17 +100,7 @@ class BingoFigureSelectionScreenViewModel(
                 val winCondition = currentState.selectedFigure
                     ?: WinCondition.Custom(requiredCells = currentState.customPattern)
 
-                val game = withContext(Dispatchers.IO) {
-                    gameRepository.getGameById(currentState.gameId)
-                }
-
-                if (game != null) {
-                    val updatedGame = game.copy(targetFigure = winCondition)
-                    withContext(Dispatchers.IO) {
-                        gameRepository.updateGame(updatedGame)
-                    }
-                    preferencesManager?.removePendingSetupGameId(currentState.gameId)
-                }
+                updateGameFigureUseCase(currentState.gameId, winCondition)
 
                 _state.value = currentState.copy(
                     isUpdating = false,
