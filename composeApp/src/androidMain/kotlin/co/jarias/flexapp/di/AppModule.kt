@@ -1,5 +1,8 @@
 package co.jarias.flexapp.di
 
+import co.jarias.flexapp.providers.CameraManager
+import co.jarias.flexapp.providers.NetworkManager
+import co.jarias.flexapp.providers.NotificationProvider
 import co.jarias.flexapp.ui.screens.bingo.card_setup.BingoCardSetupScreenViewModel
 import co.jarias.flexapp.ui.screens.bingo.card_scanner.BingoCardScannerScreenViewModel
 import co.jarias.flexapp.ui.screens.bingo.figure_selection.BingoFigureSelectionScreenViewModel
@@ -12,6 +15,11 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val appModule = module {
+    // Providers
+    single { CameraManager(get()) }
+    single { NetworkManager(get()) }
+    single { NotificationProvider(get()) }
+
     viewModel { WelcomeScreenViewModel(get()) }
     viewModel { ToolSelectionScreenViewModel(get()) }
     viewModel { BingoGameListScreenViewModel(get(), get(), get(), get(), get(), get()) }

@@ -3,7 +3,6 @@ package co.jarias.flexapp.ui.screens.bingo.card_scanner
 import android.Manifest
 import android.util.Log
 import androidx.camera.core.*
-import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
@@ -23,8 +22,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
@@ -33,8 +30,8 @@ import androidx.compose.ui.tooling.preview.Preview as ComposePreview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat
 import co.jarias.flexapp.R
+import co.jarias.flexapp.providers.CameraManager
 import co.jarias.flexapp.ui.navigation.NavigationEvent
 import co.jarias.flexapp.ui.theme.FlexAppTheme
 import co.jarias.flexapp.ui.theme.AccentAmber
@@ -45,7 +42,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
-import java.util.concurrent.Executors
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -53,7 +50,8 @@ fun BingoCardScannerScreen(
     onNavigate: (NavigationEvent) -> Unit,
     onEvent: (BingoCardScannerScreenEvents) -> Unit,
     state: BingoCardScannerScreenState,
-    isPermissionGrantedOverride: Boolean? = null
+    cameraManager: CameraManager?,
+    isPermissionGrantedOverride: Boolean? = null,
 ) {
     val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
     val isPermissionGranted = isPermissionGrantedOverride ?: cameraPermissionState.status.isGranted
@@ -64,10 +62,29 @@ fun BingoCardScannerScreen(
         }
     }
 
+    LaunchedEffect(state.navigateBack) {
+        if (state.navigateBack) {
+            onNavigate(NavigationEvent.OnNavigateUp)
+        }
+    }
+
+    if (state.scanErrorMessage != null) {
+        AlertDialog(
+            onDismissRequest = { onEvent(BingoCardScannerScreenEvents.OnErrorModalDismissed) },
+            title = { Text("Invalid Bingo Card") },
+            text = { Text(state.scanErrorMessage) },
+            confirmButton = {
+                TextButton(onClick = { onEvent(BingoCardScannerScreenEvents.OnErrorModalDismissed) }) {
+                    Text(text = "Go Back", style = MaterialTheme.typography.titleSmall)
+                }
+            }
+        )
+    }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
-            if (isPermissionGranted && state.detectedGrid == null) {
+            if (isPermissionGranted && (state.detectedGrid == null) && (state.scanErrorMessage == null)) {
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     color = Color.Black
@@ -88,9 +105,8 @@ fun BingoCardScannerScreen(
                         ) {
                             CameraControlIcon(
                                 iconRes = if (state.isFlashOn) R.drawable.outline_flash_on else R.drawable.outline_flash_off,
-                                label = "FLASH",
-                                onClick = { onEvent(BingoCardScannerScreenEvents.OnFlashToggle) }
-                            )
+                                label = "FLASH"
+                            ) { onEvent(BingoCardScannerScreenEvents.OnFlashToggle) }
 
                             // Capture Button (Central Circle)
                             Box(
@@ -105,9 +121,8 @@ fun BingoCardScannerScreen(
 
                             CameraControlIcon(
                                 iconRes = R.drawable.outline_change_circle_24,
-                                label = "FLIP",
-                                onClick = { onEvent(BingoCardScannerScreenEvents.OnFlipCamera) }
-                            )
+                                label = "FLIP"
+                            ) { onEvent(BingoCardScannerScreenEvents.OnFlipCamera) }
                         }
 
                         // Bottom Capture Card Button
@@ -150,10 +165,26 @@ fun BingoCardScannerScreen(
             ) {
                 if (state.detectedGrid == null) {
                     CameraPreview(
+                        cameraManager = cameraManager,
                         isFlashOn = state.isFlashOn,
                         isBackCamera = state.isBackCamera,
-                        onGridDetected = { grid ->
-                            onEvent(BingoCardScannerScreenEvents.OnNumbersDetected(grid))
+                        onResult = { result ->
+                            when (result) {
+                                is ParseResult.Success -> onEvent(
+                                    BingoCardScannerScreenEvents.OnNumbersDetected(
+                                        result.grid
+                                    )
+                                )
+
+                                is ParseResult.InvalidRange -> onEvent(
+                                    BingoCardScannerScreenEvents.OnScanFailed(
+                                        "Number ${result.number} is in the wrong position for column ${result.column}. Standard Bingo rules: B(1-15), I(16-30), N(31-45), G(46-60), O(61-75)."
+                                    )
+                                )
+
+                                is ParseResult.Incomplete -> { /* Keep scanning */
+                                }
+                            }
                         }
                     )
 
@@ -238,7 +269,8 @@ fun BingoCardScannerScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .padding(24.dp),
+                    .padding(24.dp)
+                    .background(MaterialTheme.colorScheme.background),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
@@ -318,16 +350,46 @@ fun ScannerOverlay(modifier: Modifier = Modifier, text: String) {
             drawLine(AccentAmber, Offset(left, top), Offset(left, top + cornerLength), strokeWidth)
 
             // Top-Right
-            drawLine(AccentAmber, Offset(left + boxSize, top), Offset(left + boxSize - cornerLength, top), strokeWidth)
-            drawLine(AccentAmber, Offset(left + boxSize, top), Offset(left + boxSize, top + cornerLength), strokeWidth)
+            drawLine(
+                AccentAmber,
+                Offset(left + boxSize, top),
+                Offset(left + boxSize - cornerLength, top),
+                strokeWidth
+            )
+            drawLine(
+                AccentAmber,
+                Offset(left + boxSize, top),
+                Offset(left + boxSize, top + cornerLength),
+                strokeWidth
+            )
 
             // Bottom-Left
-            drawLine(AccentAmber, Offset(left, top + boxSize), Offset(left + cornerLength, top + boxSize), strokeWidth)
-            drawLine(AccentAmber, Offset(left, top + boxSize), Offset(left, top + boxSize - cornerLength), strokeWidth)
+            drawLine(
+                AccentAmber,
+                Offset(left, top + boxSize),
+                Offset(left + cornerLength, top + boxSize),
+                strokeWidth
+            )
+            drawLine(
+                AccentAmber,
+                Offset(left, top + boxSize),
+                Offset(left, top + boxSize - cornerLength),
+                strokeWidth
+            )
 
             // Bottom-Right
-            drawLine(AccentAmber, Offset(left + boxSize, top + boxSize), Offset(left + boxSize - cornerLength, top + boxSize), strokeWidth)
-            drawLine(AccentAmber, Offset(left + boxSize, top + boxSize), Offset(left + boxSize, top + boxSize - cornerLength), strokeWidth)
+            drawLine(
+                AccentAmber,
+                Offset(left + boxSize, top + boxSize),
+                Offset(left + boxSize - cornerLength, top + boxSize),
+                strokeWidth
+            )
+            drawLine(
+                AccentAmber,
+                Offset(left + boxSize, top + boxSize),
+                Offset(left + boxSize, top + boxSize - cornerLength),
+                strokeWidth
+            )
 
             // Laser Line
             val laserY = top + (boxSize * laserPosition)
@@ -354,11 +416,12 @@ fun ScannerOverlay(modifier: Modifier = Modifier, text: String) {
 @androidx.annotation.OptIn(ExperimentalGetImage::class)
 @Composable
 fun CameraPreview(
+    cameraManager: CameraManager?,
     isFlashOn: Boolean,
     isBackCamera: Boolean,
-    onGridDetected: (List<List<String>>) -> Unit
+    onResult: (ParseResult) -> Unit
 ) {
-    if (LocalInspectionMode.current) {
+    if (cameraManager == null || LocalInspectionMode.current) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -370,12 +433,10 @@ fun CameraPreview(
         return
     }
 
-    val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
-    val executor = remember { Executors.newSingleThreadExecutor() }
     val parser = remember { BingoCardParser() }
-    
+    val scope = rememberCoroutineScope()
+
     var camera by remember { mutableStateOf<Camera?>(null) }
 
     LaunchedEffect(isFlashOn) {
@@ -388,8 +449,8 @@ fun CameraPreview(
         },
         modifier = Modifier.fillMaxSize(),
         update = { previewView ->
-            cameraProviderFuture.addListener({
-                val cameraProvider = cameraProviderFuture.get()
+            scope.launch {
+                val cameraProvider = cameraManager.getCameraProvider()
                 val preview = androidx.camera.core.Preview.Builder().build().also {
                     it.surfaceProvider = previewView.surfaceProvider
                 }
@@ -398,7 +459,7 @@ fun CameraPreview(
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .build()
                     .also {
-                        it.setAnalyzer(executor) { imageProxy ->
+                        it.setAnalyzer(cameraManager.getAnalysisExecutor()) { imageProxy ->
                             val mediaImage = imageProxy.image
                             if (mediaImage != null) {
                                 val image = InputImage.fromMediaImage(
@@ -409,10 +470,8 @@ fun CameraPreview(
                                     TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
                                 recognizer.process(image)
                                     .addOnSuccessListener { visionText ->
-                                        val grid = parser.parse(visionText)
-                                        if (grid != null) {
-                                            onGridDetected(grid)
-                                        }
+                                        val result = parser.parse(visionText)
+                                        onResult(result)
                                     }
                                     .addOnCompleteListener {
                                         imageProxy.close()
@@ -423,12 +482,13 @@ fun CameraPreview(
                         }
                     }
 
-                val cameraSelector = if (isBackCamera) CameraSelector.DEFAULT_BACK_CAMERA else CameraSelector.DEFAULT_FRONT_CAMERA
+                val cameraSelector =
+                    if (isBackCamera) CameraSelector.DEFAULT_BACK_CAMERA else CameraSelector.DEFAULT_FRONT_CAMERA
 
                 try {
-                    cameraProvider.unbindAll()
-                    camera = cameraProvider.bindToLifecycle(
+                    camera = cameraManager.bindCamera(
                         lifecycleOwner,
+                        cameraProvider,
                         cameraSelector,
                         preview,
                         imageAnalysis
@@ -437,7 +497,7 @@ fun CameraPreview(
                 } catch (exc: Exception) {
                     Log.e("BingoScanner", "Use case binding failed", exc)
                 }
-            }, ContextCompat.getMainExecutor(context))
+            }
         }
     )
 }
@@ -483,7 +543,7 @@ fun ScannerProgressIndicator(size: androidx.compose.ui.unit.Dp) {
     )
 }
 
-@ComposePreview(showBackground = true)
+@ComposePreview(showBackground = true, name = "Scanning State", showSystemUi = true)
 @Composable
 fun BingoCardScannerScreenScanningPreview() {
     FlexAppTheme {
@@ -494,7 +554,66 @@ fun BingoCardScannerScreenScanningPreview() {
                 gameId = 1L,
                 detectedGrid = null
             ),
+            cameraManager = null,
             isPermissionGrantedOverride = true
+        )
+    }
+}
+
+@ComposePreview(showBackground = true, name = "Error Modal", showSystemUi = true)
+@Composable
+fun BingoCardScannerScreenErrorPreview() {
+    FlexAppTheme {
+        BingoCardScannerScreen(
+            onNavigate = {},
+            onEvent = {},
+            state = BingoCardScannerScreenState(
+                gameId = 1L,
+                scanErrorMessage = "Number 25 is in the wrong position for column B. Standard Bingo rules: B(1-15), I(16-30), N(31-45), G(46-60), O(61-75)."
+            ),
+            cameraManager = null,
+            isPermissionGrantedOverride = true
+        )
+    }
+}
+
+@ComposePreview(showBackground = true, name = "Detected Grid", showSystemUi = true)
+@Composable
+fun BingoCardScannerScreenDetectedPreview() {
+    val dummyGrid = listOf(
+        listOf("5", "20", "35", "50", "65"),
+        listOf("12", "25", "40", "55", "70"),
+        listOf("3", "18", "FREE", "48", "63"),
+        listOf("15", "30", "45", "60", "75"),
+        listOf("1", "16", "31", "46", "61")
+    )
+    FlexAppTheme {
+        BingoCardScannerScreen(
+            onNavigate = {},
+            onEvent = {},
+            state = BingoCardScannerScreenState(
+                gameId = 1L,
+                detectedGrid = dummyGrid
+            ),
+            cameraManager = null,
+            isPermissionGrantedOverride = true
+        )
+    }
+}
+
+@ComposePreview(showBackground = true, name = "Scanning State", showSystemUi = true)
+@Composable
+fun BingoCardScannerScreenNoPermissionPreview() {
+    FlexAppTheme {
+        BingoCardScannerScreen(
+            onNavigate = {},
+            onEvent = {},
+            state = BingoCardScannerScreenState(
+                gameId = 1L,
+                detectedGrid = null
+            ),
+            cameraManager = null,
+            isPermissionGrantedOverride = false,
         )
     }
 }

@@ -10,6 +10,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import co.jarias.flexapp.providers.CameraManager
 import co.jarias.flexapp.ui.screens.bingo.card_setup.BingoCardSetupScreen
 import co.jarias.flexapp.ui.screens.bingo.card_setup.BingoCardSetupScreenViewModel
 import co.jarias.flexapp.ui.screens.bingo.card_scanner.BingoCardScannerScreen
@@ -26,6 +27,7 @@ import co.jarias.flexapp.ui.screens.tools.ToolSelectionScreen
 import co.jarias.flexapp.ui.screens.tools.ToolSelectionScreenViewModel
 import co.jarias.flexapp.ui.screens.welcome.WelcomeScreen
 import co.jarias.flexapp.ui.screens.welcome.WelcomeScreenViewModel
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -124,11 +126,13 @@ fun AppNavigation(navController: NavHostController) {
             val gameId = backStackEntry.arguments?.getLong(NavArguments.GAME_ID) ?: 0L
             val viewModel: BingoCardScannerScreenViewModel = koinViewModel { parametersOf(gameId) }
             val state by viewModel.state.collectAsState()
+            val cameraManager: CameraManager = koinInject()
 
             BingoCardScannerScreen(
                 onNavigate = { event -> handleNavigationEvent(navController, event) },
                 onEvent = { event -> viewModel.onEvent(event) },
-                state = state
+                state = state,
+                cameraManager = cameraManager
             )
         }
 
