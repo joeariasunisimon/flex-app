@@ -6,5 +6,7 @@ data class BingoCardScannerScreenState(
     val isProcessing: Boolean = false,
     val detectedGrid: List<List<String>>? = null,
     val errorMessage: String? = null,
-    val cardSaved: Boolean = false
+    val cardSaved: Boolean = false,
+    val isFlashOn: Boolean = false,
+    val isBackCamera: Boolean = true
 )

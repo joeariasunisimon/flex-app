@@ -31,6 +31,21 @@ class BingoCardScannerScreenViewModel(
             is BingoCardScannerScreenEvents.OnRetry -> {
                 _state.value = _state.value.copy(detectedGrid = null, errorMessage = null)
             }
+            is BingoCardScannerScreenEvents.OnFlashToggle -> {
+                _state.value = _state.value.copy(isFlashOn = !_state.value.isFlashOn)
+            }
+            is BingoCardScannerScreenEvents.OnFlipCamera -> {
+                _state.value = _state.value.copy(isBackCamera = !_state.value.isBackCamera)
+            }
+            is BingoCardScannerScreenEvents.OnCaptureClicked -> {
+                // In this implementation, capture just confirms the current detection
+                // if it's already detected, or we could add a flag to "freeze" detection.
+                if (_state.value.detectedGrid != null) {
+                    saveCard()
+                } else {
+                    _state.value = _state.value.copy(errorMessage = "No card detected yet")
+                }
+            }
         }
     }
 

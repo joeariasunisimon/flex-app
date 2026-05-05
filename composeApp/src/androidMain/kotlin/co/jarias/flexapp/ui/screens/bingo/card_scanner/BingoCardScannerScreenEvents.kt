@@ -4,4 +4,7 @@ sealed class BingoCardScannerScreenEvents {
     data class OnNumbersDetected(val grid: List<List<String>>) : BingoCardScannerScreenEvents()
     data object OnConfirmSave : BingoCardScannerScreenEvents()
     data object OnRetry : BingoCardScannerScreenEvents()
+    data object OnFlashToggle : BingoCardScannerScreenEvents()
+    data object OnFlipCamera : BingoCardScannerScreenEvents()
+    data object OnCaptureClicked : BingoCardScannerScreenEvents()
 }
