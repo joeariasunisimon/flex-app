@@ -2,10 +2,10 @@ package co.jarias.flexapp.ui.screens.bingo.card_scanner
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import co.jarias.flexapp.data.local.PreferencesManager
-import co.jarias.flexapp.data.repository.BingoCardRepository
 import co.jarias.flexapp.domain.BingoCard
 import co.jarias.flexapp.domain.BingoCell
+import co.jarias.flexapp.domain.usecase.ClearCardSetupStateUseCase
+import co.jarias.flexapp.domain.usecase.SaveBingoCardUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,8 +14,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class BingoCardScannerScreenViewModel(
-    private val bingoCardRepository: BingoCardRepository,
-    private val preferencesManager: PreferencesManager,
+    private val saveBingoCardUseCase: SaveBingoCardUseCase,
+    private val clearCardSetupStateUseCase: ClearCardSetupStateUseCase,
     private val gameId: Long
 ) : ViewModel() {
 
@@ -55,10 +55,10 @@ class BingoCardScannerScreenViewModel(
                 val card = BingoCard(id = null, gameId = gameId, grid = grid)
                 
                 withContext(Dispatchers.IO) {
-                    bingoCardRepository.insertCard(card)
+                    saveBingoCardUseCase(card)
                 }
                 
-                preferencesManager.clearCardSetupState(gameId)
+                clearCardSetupStateUseCase(gameId)
                 
                 _state.value = _state.value.copy(
                     isProcessing = false,

@@ -16,8 +16,12 @@ val appModule = module {
     viewModel { ToolSelectionScreenViewModel(get()) }
     viewModel { BingoGameListScreenViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { BingoGameSetupScreenViewModel(get(), get()) }
-    viewModel { (gameId: Long) -> BingoCardSetupScreenViewModel(get(), get(), gameId) }
+    viewModel { (gameId: Long) ->
+        BingoCardSetupScreenViewModel(
+            get(), get(), get(), get(), get(), gameId
+        )
+    }
     viewModel { (gameId: Long) -> BingoCardScannerScreenViewModel(get(), get(), gameId) }
-    viewModel { (gameId: Long) -> BingoFigureSelectionScreenViewModel(get(), get(), get(), gameId) }
+    viewModel { (gameId: Long) -> BingoFigureSelectionScreenViewModel(get(), get(), gameId) }
     viewModel { (gameId: Long) -> BingoGamePlayScreenViewModel(get(), get(), get(), gameId) }
 }
