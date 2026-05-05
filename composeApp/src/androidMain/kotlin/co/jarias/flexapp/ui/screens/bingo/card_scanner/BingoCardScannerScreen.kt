@@ -75,7 +75,7 @@ fun BingoCardScannerScreen(
             text = { Text(state.scanErrorMessage) },
             confirmButton = {
                 TextButton(onClick = { onEvent(BingoCardScannerScreenEvents.OnErrorModalDismissed) }) {
-                    Text(text = "Go Back", style = MaterialTheme.typography.titleSmall)
+                    Text(text = "Go Back", style = MaterialTheme.typography.titleMedium)
                 }
             }
         )
