@@ -25,13 +25,17 @@ class GameRepositoryImpl(database: Database) : GameRepository {
 
     override suspend fun insertGame(game: Game): Long {
         val targetFigureStr = game.targetFigure?.let { WinCondition.serialize(it) }
-        queries.insertGame(game.name, targetFigureStr, game.createdAt)
-        return queries.selectAllGames().executeAsList().last().id // Not ideal, but for simplicity
+        queries.insertGame(game.cardId, game.name, targetFigureStr, game.createdAt)
+        return queries.selectAllGames().executeAsList().last().id
     }
 
     override suspend fun updateGame(game: Game) {
         val targetFigureStr = game.targetFigure?.let { WinCondition.serialize(it) }
-        game.id?.let { queries.updateGame(game.name, targetFigureStr, game.createdAt, it) }
+        game.id?.let { queries.updateGame(game.cardId, game.name, targetFigureStr, game.createdAt, it) }
+    }
+
+    override suspend fun updateGameCard(gameId: Long, cardId: Long) {
+        queries.updateGameCard(cardId, gameId)
     }
 
     override suspend fun updateGameCompletion(gameId: Long, isCompleted: Boolean, completedAt: String?) {
@@ -49,6 +53,7 @@ class GameRepositoryImpl(database: Database) : GameRepository {
     private fun DbGame.toDomain(): Game {
         return Game(
             id = id,
+            cardId = card_id,
             name = name,
             targetFigure = target_figure?.let { figureStr ->
                 try {

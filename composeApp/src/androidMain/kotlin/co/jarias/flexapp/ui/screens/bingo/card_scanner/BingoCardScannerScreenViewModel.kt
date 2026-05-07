@@ -71,10 +71,10 @@ class BingoCardScannerScreenViewModel(
                     }
                 }
                 
-                val card = BingoCard(id = null, gameId = gameId, grid = grid)
+                val card = BingoCard(id = null, grid = grid, createdAt = "")
                 
                 withContext(Dispatchers.IO) {
-                    saveBingoCardUseCase(card)
+                    saveBingoCardUseCase(gameId, card)
                 }
                 
                 clearCardSetupStateUseCase(gameId)

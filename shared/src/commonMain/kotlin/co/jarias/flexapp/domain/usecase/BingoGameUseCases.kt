@@ -32,26 +32,40 @@ class GenerateRandomNumbersUseCase {
     }
 }
 
-class GenerateBingoCardUseCase(private val bingoCardRepository: BingoCardRepository) {
+class GenerateBingoCardUseCase(
+    private val bingoCardRepository: BingoCardRepository,
+    private val gameRepository: GameRepository
+) {
     suspend operator fun invoke(gameId: Long): BingoCard {
         val grid = BingoCard.generateRandomCard()
-        val card = BingoCard(gameId = gameId, grid = grid)
-        bingoCardRepository.insertCard(card)
-        return card
+        val createdAt = Clock.System.now().toString()
+        val card = BingoCard(grid = grid, createdAt = createdAt)
+        val cardId = bingoCardRepository.insertCard(card)
+        gameRepository.updateGameCard(gameId, cardId)
+        return card.copy(id = cardId)
     }
 }
 
-class SaveBingoCardUseCase(private val bingoCardRepository: BingoCardRepository) {
-    suspend operator fun invoke(card: BingoCard) {
-        bingoCardRepository.insertCard(card)
+class SaveBingoCardUseCase(
+    private val bingoCardRepository: BingoCardRepository,
+    private val gameRepository: GameRepository
+) {
+    suspend operator fun invoke(gameId: Long, card: BingoCard) {
+        val cardId = bingoCardRepository.insertCard(card)
+        gameRepository.updateGameCard(gameId, cardId)
     }
 }
 
-class GetBingoCardUseCase(private val bingoCardRepository: BingoCardRepository) {
+class GetBingoCardUseCase(
+    private val bingoCardRepository: BingoCardRepository,
+    private val gameRepository: GameRepository
+) {
     suspend operator fun invoke(gameId: Long): BingoCard? {
-        return bingoCardRepository.getCardByGameId(gameId)
+        val game = gameRepository.getGameById(gameId) ?: return null
+        return game.cardId?.let { bingoCardRepository.getCardById(it) }
     }
 }
+
 
 class MarkNumberUseCase(
     private val markedNumberRepository: MarkedNumberRepository,
@@ -72,15 +86,13 @@ class MarkNumberUseCase(
 }
 
 class CheckWinConditionUseCase(
-    private val bingoCardRepository: BingoCardRepository,
+    private val getBingoCardUseCase: GetBingoCardUseCase,
     private val markedNumberRepository: MarkedNumberRepository
 ) {
     suspend operator fun invoke(gameId: Long, winCondition: WinCondition?): Boolean {
         if (winCondition == null) return false
-        val cards = bingoCardRepository.getCardsByGameId(gameId)
-        if (cards.isEmpty()) return false
+        val card = getBingoCardUseCase(gameId) ?: return false
 
-        val card = cards.first() // Assuming one card per game for now
         val markedNumbers = markedNumberRepository.getMarkedNumbersByGameId(gameId)
         val markedSet = markedNumbers.map { it.number }.toSet()
 
@@ -105,26 +117,27 @@ class CompleteGameUseCase(
 
 class GetGameStateUseCase(
     private val gameRepository: GameRepository,
+    private val getBingoCardUseCase: GetBingoCardUseCase,
     private val bingoCardRepository: BingoCardRepository,
     private val markedNumberRepository: MarkedNumberRepository,
     private val checkWinConditionUseCase: CheckWinConditionUseCase
 ) {
     suspend operator fun invoke(gameId: Long): GameState? {
         val game = gameRepository.getGameById(gameId) ?: return null
-        val cards = bingoCardRepository.getCardsByGameId(gameId)
+        val card = getBingoCardUseCase(gameId) ?: return null
         val markedNumbers = markedNumberRepository.getMarkedNumbersByGameId(gameId)
 
-        if (cards.isEmpty()) return null
-
-        val card = cards.first()
         val markedSet = markedNumbers.map { it.number }.toSet()
         val isWon = checkWinConditionUseCase(gameId, game.targetFigure)
+        
+        val usageCount = card.id?.let { bingoCardRepository.getCardUsageCount(it) } ?: 1
 
         return GameState(
             game = game,
             card = card,
             markedNumbers = markedSet,
-            isWon = isWon
+            isWon = isWon,
+            usageCount = usageCount
         )
     }
 }

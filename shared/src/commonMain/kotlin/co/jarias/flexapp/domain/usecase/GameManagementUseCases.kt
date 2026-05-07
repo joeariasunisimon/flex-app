@@ -30,20 +30,11 @@ class RestartGameUseCase(
 
 class DropGameUseCase(
     private val gameRepository: GameRepository,
-    private val bingoCardRepository: BingoCardRepository,
     private val markedNumberRepository: MarkedNumberRepository
 ) {
     suspend operator fun invoke(gameId: Long) {
         // Delete marked numbers
         markedNumberRepository.clearMarkedNumbersForGame(gameId)
-
-        // Delete cards
-        val cards = bingoCardRepository.getCardsByGameId(gameId)
-        cards.forEach { card ->
-            if (card.id != null) {
-                bingoCardRepository.deleteCard(card.id!!)
-            }
-        }
 
         // Delete game
         gameRepository.deleteGame(gameId)
@@ -82,17 +73,15 @@ sealed class GameSetupStatus {
 
 class CheckGameSetupStatusUseCase(
     private val gameRepository: GameRepository,
-    private val bingoCardRepository: BingoCardRepository,
     private val preferencesManager: PreferencesManager
 ) {
     suspend operator fun invoke(gameId: Long): GameSetupStatus {
-        val cards = bingoCardRepository.getCardsByGameId(gameId)
-        if (cards.isEmpty()) {
+        val game = gameRepository.getGameById(gameId)
+        if (game?.cardId == null) {
             return GameSetupStatus.CardSetupRequired
         }
 
-        val game = gameRepository.getGameById(gameId)
-        if (game?.targetFigure == null) {
+        if (game.targetFigure == null) {
             return GameSetupStatus.FigureSelectionRequired
         }
 

@@ -38,6 +38,12 @@ fun BingoGamePlayScreen(
     onEvent: (BingoGamePlayScreenEvents) -> Unit,
     state: BingoGamePlayScreenState
 ) {
+    LaunchedEffect(state.navigateToNewGameId) {
+        state.navigateToNewGameId?.let { newGameId ->
+            onNavigate(NavigationEvent.NavigateToBingoFigureSelection(newGameId))
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -113,7 +119,9 @@ fun BingoGamePlayScreen(
                 WinDialog(
                     gameName = state.gameState?.game?.name ?: "",
                     targetFigure = state.gameState?.game?.targetFigure?.displayName ?: "",
+                    usageCount = state.gameState?.usageCount ?: 0,
                     onDismiss = { onEvent(BingoGamePlayScreenEvents.OnWinDialogDismissed) },
+                    onPlayAgain = { onEvent(BingoGamePlayScreenEvents.OnPlayAgainClicked) },
                     onBackToMenu = { onNavigate(NavigationEvent.NavigateToBingoGameList) }
                 )
             }
@@ -181,6 +189,16 @@ private fun BingoGameContent(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                
+                if (gameState.usageCount > 1) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Times played with this card: ${gameState.usageCount}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
 
@@ -396,7 +414,9 @@ private fun NumberButton(
 private fun WinDialog(
     gameName: String,
     targetFigure: String,
+    usageCount: Long,
     onDismiss: () -> Unit,
+    onPlayAgain: () -> Unit,
     onBackToMenu: () -> Unit
 ) {
     Dialog(onDismissRequest = onDismiss) {
@@ -428,22 +448,47 @@ private fun WinDialog(
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center
                 )
+                
+                if (usageCount > 0) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Games played with this card: $usageCount",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(24.dp))
+                
+                Button(
+                    onClick = onPlayAgain,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.extraLarge
+                ) {
+                    Text(text = "Play again (Same Card)", style = MaterialTheme.typography.titleSmall)
+                }
+                
+                Spacer(modifier = Modifier.height(12.dp))
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
                     OutlinedButton(
                         onClick = onDismiss,
+                        modifier = Modifier.weight(1f),
                         shape = MaterialTheme.shapes.extraLarge
                     ) {
                         Text(text = "Continue", style = MaterialTheme.typography.labelMedium)
                     }
-                    Button(
+                    Spacer(modifier = Modifier.width(8.dp))
+                    OutlinedButton(
                         onClick = onBackToMenu,
+                        modifier = Modifier.weight(1f),
                         shape = MaterialTheme.shapes.extraLarge
                     ) {
-                        Text(text = "Go to Menu", style = MaterialTheme.typography.labelMedium)
+                        Text(text = "Menu", style = MaterialTheme.typography.labelMedium)
                     }
                 }
             }
@@ -491,7 +536,6 @@ fun BingoGamePlayScreenPreviewPlaying() {
     )
     val card = BingoCard(
         id = 1,
-        gameId = 1,
         grid = List(5) { row ->
             List(5) { col ->
                 val number = if (row == 2 && col == 2) null else (row * 15 + col + 1)
@@ -501,7 +545,8 @@ fun BingoGamePlayScreenPreviewPlaying() {
                     isFree = (row == 2 && col == 2)
                 )
             }
-        }
+        },
+        createdAt = "2024-06-01T12:00:00Z"
     )
     val markedNumbers = setOf(3, 7, 12, 18)
     val gameState = GameState(
@@ -534,7 +579,6 @@ fun BingoGamePlayScreenPreviewWinDialog() {
     )
     val card = BingoCard(
         id = 1,
-        gameId = 1,
         grid = List(5) { row ->
             List(5) { col ->
                 BingoCell(
@@ -543,7 +587,8 @@ fun BingoGamePlayScreenPreviewWinDialog() {
                     isFree = (row == 2 && col == 2)
                 )
             }
-        }
+        },
+        createdAt = "2024-06-01T12:00:00Z"
     )
     val markedNumbers = (1..75).toSet()
     val gameState = GameState(

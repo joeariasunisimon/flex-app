@@ -31,5 +31,5 @@ val appModule = module {
     }
     viewModel { (gameId: Long) -> BingoCardScannerScreenViewModel(get(), get(), gameId) }
     viewModel { (gameId: Long) -> BingoFigureSelectionScreenViewModel(get(), get(), gameId) }
-    viewModel { (gameId: Long) -> BingoGamePlayScreenViewModel(get(), get(), get(), gameId) }
+    viewModel { (gameId: Long) -> BingoGamePlayScreenViewModel(get(), get(), get(), get(), gameId) }
 }

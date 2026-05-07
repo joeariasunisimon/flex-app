@@ -10,4 +10,5 @@ interface GameRepository {
     suspend fun updateGameCompletion(gameId: Long, isCompleted: Boolean, completedAt: String?)
     suspend fun deleteGame(gameId: Long)
     suspend fun getGameById(gameId: Long): Game?
+    suspend fun updateGameCard(gameId: Long, cardId: Long)
 }

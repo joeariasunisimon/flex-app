@@ -18,21 +18,22 @@ val commonModule = module {
     single { co.jarias.flexapp.data.local.PreferencesManager(get()) }
 
     factory { GenerateRandomNumbersUseCase() }
-    factory { GenerateBingoCardUseCase(get()) }
-    factory { SaveBingoCardUseCase(get()) }
-    factory { GetBingoCardUseCase(get()) }
+    factory { GenerateBingoCardUseCase(get(), get()) }
+    factory { SaveBingoCardUseCase(get(), get()) }
+    factory { GetBingoCardUseCase(get(), get()) }
     factory { MarkNumberUseCase(get(), get()) }
     factory { CheckWinConditionUseCase(get(), get()) }
     factory { CompleteGameUseCase(get(), get()) }
-    factory { GetGameStateUseCase(get(), get(), get(), get()) }
+    factory { GetGameStateUseCase(get(), get(), get(), get(), get()) }
     factory { CreateGameUseCase(get()) }
     factory { GetAllGamesUseCase(get()) }
     factory { GetGameByIdUseCase(get()) }
     factory { RestartGameUseCase(get(), get()) }
-    factory { DropGameUseCase(get(), get(), get()) }
+    factory { RestartGameWithSameCardUseCase(get()) }
+    factory { DropGameUseCase(get(), get()) }
     factory { UpdateGameNameUseCase(get()) }
     factory { UpdateGameFigureUseCase(get(), get()) }
-    factory { CheckGameSetupStatusUseCase(get(), get(), get()) }
+    factory { CheckGameSetupStatusUseCase(get(), get()) }
 
     // Preferences Use Cases
     factory { GetLastToolUseCase(get()) }

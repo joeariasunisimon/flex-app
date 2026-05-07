@@ -7,5 +7,6 @@ data class BingoGamePlayScreenState(
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
     val showWinDialog: Boolean = false,
-    val lastMarkedNumber: Int? = null
+    val lastMarkedNumber: Int? = null,
+    val navigateToNewGameId: Long? = null
 )

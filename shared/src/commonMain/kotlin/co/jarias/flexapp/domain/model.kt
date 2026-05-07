@@ -15,8 +15,8 @@ data class BingoCell(
 @Serializable
 data class BingoCard(
     val id: Long? = null,
-    val gameId: Long,
-    val grid: List<List<BingoCell>>
+    val grid: List<List<BingoCell>>,
+    val createdAt: String
 ) {
     companion object {
         private val json = Json { ignoreUnknownKeys = true }
@@ -108,6 +108,7 @@ sealed class WinCondition {
 @Serializable
 data class Game(
     val id: Long? = null,
+    val cardId: Long? = null,
     val name: String,
     val targetFigure: WinCondition? = null,
     val createdAt: String,
@@ -127,5 +128,6 @@ data class GameState(
     val game: Game,
     val card: BingoCard,
     val markedNumbers: Set<Int>,
-    val isWon: Boolean = false
+    val isWon: Boolean = false,
+    val usageCount: Long = 0
 )

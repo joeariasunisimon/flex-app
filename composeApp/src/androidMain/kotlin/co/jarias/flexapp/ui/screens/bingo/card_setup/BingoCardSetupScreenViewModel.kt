@@ -226,10 +226,10 @@ class BingoCardSetupScreenViewModel(
                 _state.value = currentState.copy(isSaving = true)
 
                 val grid = getCardNumbers()
-                val card = BingoCard(id = null, gameId = currentState.gameId, grid = grid)
+                val card = BingoCard(id = null, grid = grid, createdAt = "")
 
                 withContext(Dispatchers.IO) {
-                    saveBingoCardUseCase(card)
+                    saveBingoCardUseCase(currentState.gameId, card)
                 }
 
                 clearCardSetupStateInPreferences()

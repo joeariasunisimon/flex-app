@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import co.jarias.flexapp.domain.usecase.CompleteGameUseCase
 import co.jarias.flexapp.domain.usecase.GetGameStateUseCase
 import co.jarias.flexapp.domain.usecase.MarkNumberUseCase
+import co.jarias.flexapp.domain.usecase.RestartGameWithSameCardUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,6 +15,7 @@ class BingoGamePlayScreenViewModel(
     private val getGameStateUseCase: GetGameStateUseCase,
     private val markNumberUseCase: MarkNumberUseCase,
     private val completeGameUseCase: CompleteGameUseCase,
+    private val restartGameWithSameCardUseCase: RestartGameWithSameCardUseCase,
     private val gameId: Long = 0
 ) : ViewModel() {
 
@@ -63,6 +65,36 @@ class BingoGamePlayScreenViewModel(
             is BingoGamePlayScreenEvents.OnWinDialogDismissed -> dismissWinDialog()
             is BingoGamePlayScreenEvents.OnRetryClicked -> {
                 loadGame(currentGameId)
+            }
+            is BingoGamePlayScreenEvents.OnPlayAgainClicked -> playAgain()
+        }
+    }
+
+    private fun playAgain() {
+        val currentState = _state.value
+        val gameId = currentState.gameState?.game?.id ?: return
+        
+        viewModelScope.launch {
+            try {
+                _state.value = currentState.copy(isLoading = true)
+                val newGame = restartGameWithSameCardUseCase(gameId)
+                if (newGame != null) {
+                    _state.value = currentState.copy(
+                        isLoading = false,
+                        navigateToNewGameId = newGame.id,
+                        showWinDialog = false
+                    )
+                } else {
+                    _state.value = currentState.copy(
+                        isLoading = false,
+                        errorMessage = "Failed to restart game"
+                    )
+                }
+            } catch (e: Exception) {
+                _state.value = currentState.copy(
+                    isLoading = false,
+                    errorMessage = "Failed to restart: ${e.message}"
+                )
             }
         }
     }

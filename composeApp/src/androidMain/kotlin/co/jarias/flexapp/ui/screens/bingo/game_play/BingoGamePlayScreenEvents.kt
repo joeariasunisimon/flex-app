@@ -4,4 +4,5 @@ sealed class BingoGamePlayScreenEvents {
     data class OnNumberMarked(val number: Int) : BingoGamePlayScreenEvents()
     data object OnWinDialogDismissed : BingoGamePlayScreenEvents()
     data object OnRetryClicked : BingoGamePlayScreenEvents()
+    data object OnPlayAgainClicked : BingoGamePlayScreenEvents()
 }

@@ -8,33 +8,39 @@ class BingoCardRepositoryImpl(database: Database) : BingoCardRepository {
 
     private val queries = database.database.bingoDatabaseQueries
 
-    override suspend fun getCardsByGameId(gameId: Long): List<BingoCard> {
-        return queries.selectCardsByGameId(gameId).executeAsList().map { it.toDomain() }
+    override suspend fun getCardById(cardId: Long): BingoCard? {
+        return queries.selectCardById(cardId).executeAsOneOrNull()?.toDomain()
     }
 
-    override suspend fun getCardByGameId(gameId: Long): BingoCard? {
-        return getCardsByGameId(gameId).firstOrNull()
+    override suspend fun getCardByGrid(grid: List<List<co.jarias.flexapp.domain.BingoCell>>): BingoCard? {
+        val gridJson = co.jarias.flexapp.domain.BingoCard.serializeGrid(grid)
+        return queries.selectCardByGrid(gridJson).executeAsOneOrNull()?.toDomain()
     }
 
-    override suspend fun insertCard(card: BingoCard) {
-        val gridJson = BingoCard.serializeGrid(card.grid)
-        val existing = queries.selectCardsByGameId(card.gameId).executeAsList()
-        if (existing.isNotEmpty()) {
-            queries.deleteCard(existing.first().id)
+    override suspend fun insertCard(card: BingoCard): Long {
+        val gridJson = co.jarias.flexapp.domain.BingoCard.serializeGrid(card.grid)
+        val existing = queries.selectCardByGrid(gridJson).executeAsOneOrNull()
+        if (existing != null) {
+            return existing.id
         }
-        queries.insertCard(card.gameId, gridJson)
+        queries.insertCard(gridJson, card.createdAt)
+        return queries.selectCardByGrid(gridJson).executeAsOne().id
     }
 
     override suspend fun deleteCard(cardId: Long) {
         queries.deleteCard(cardId)
     }
 
-    private fun DbBingoCard.toDomain(): BingoCard {
-        val grid = BingoCard.deserializeGrid(grid_data)
+    override suspend fun getCardUsageCount(cardId: Long): Long {
+        return queries.getCardUsageCount(cardId).executeAsOne()
+    }
+
+    private fun co.jarias.flexapp.shared.database.BingoCard.toDomain(): BingoCard {
+        val grid = co.jarias.flexapp.domain.BingoCard.deserializeGrid(grid_data)
         return BingoCard(
             id = id,
-            gameId = game_id,
-            grid = grid
+            grid = grid,
+            createdAt = created_at
         )
     }
 }
