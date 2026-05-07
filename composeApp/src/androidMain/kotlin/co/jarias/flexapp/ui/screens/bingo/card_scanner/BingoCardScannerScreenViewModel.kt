@@ -31,7 +31,7 @@ class BingoCardScannerScreenViewModel(
                 _state.value = _state.value.copy(scanErrorMessage = event.message)
             }
             is BingoCardScannerScreenEvents.OnErrorModalDismissed -> {
-                _state.value = _state.value.copy(scanErrorMessage = null, navigateBack = true)
+                _state.value = _state.value.copy(scanErrorMessage = null)
             }
             is BingoCardScannerScreenEvents.OnConfirmSave -> saveCard()
             is BingoCardScannerScreenEvents.OnRetry -> {

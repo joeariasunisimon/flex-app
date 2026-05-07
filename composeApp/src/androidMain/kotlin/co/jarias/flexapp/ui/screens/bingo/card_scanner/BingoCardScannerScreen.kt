@@ -4,7 +4,6 @@ import android.Manifest
 import android.util.Log
 import androidx.camera.core.*
 import androidx.camera.view.PreviewView
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -75,7 +74,7 @@ fun BingoCardScannerScreen(
             text = { Text(state.scanErrorMessage) },
             confirmButton = {
                 TextButton(onClick = { onEvent(BingoCardScannerScreenEvents.OnErrorModalDismissed) }) {
-                    Text(text = "Go Back", style = MaterialTheme.typography.titleMedium)
+                    Text(text = "Try Again", style = MaterialTheme.typography.titleMedium)
                 }
             }
         )
@@ -168,21 +167,24 @@ fun BingoCardScannerScreen(
                         cameraManager = cameraManager,
                         isFlashOn = state.isFlashOn,
                         isBackCamera = state.isBackCamera,
+                        isPaused = state.scanErrorMessage != null,
                         onResult = { result ->
-                            when (result) {
-                                is ParseResult.Success -> onEvent(
-                                    BingoCardScannerScreenEvents.OnNumbersDetected(
-                                        result.grid
+                            if (state.scanErrorMessage == null) {
+                                when (result) {
+                                    is ParseResult.Success -> onEvent(
+                                        BingoCardScannerScreenEvents.OnNumbersDetected(
+                                            result.grid
+                                        )
                                     )
-                                )
 
-                                is ParseResult.InvalidRange -> onEvent(
-                                    BingoCardScannerScreenEvents.OnScanFailed(
-                                        "Number ${result.number} is in the wrong position for column ${result.column}. Standard Bingo rules: B(1-15), I(16-30), N(31-45), G(46-60), O(61-75)."
+                                    is ParseResult.InvalidRange -> onEvent(
+                                        BingoCardScannerScreenEvents.OnScanFailed(
+                                            "Number ${result.number} is in the wrong position for column ${result.column}. Standard Bingo rules: B(1-15), I(16-30), N(31-45), G(46-60), O(61-75)."
+                                        )
                                     )
-                                )
 
-                                is ParseResult.Incomplete -> { /* Keep scanning */
+                                    is ParseResult.Incomplete -> { /* Keep scanning */
+                                    }
                                 }
                             }
                         }
@@ -308,17 +310,6 @@ fun CameraControlIcon(iconRes: Int, label: String, onClick: () -> Unit) {
 
 @Composable
 fun ScannerOverlay(modifier: Modifier = Modifier, text: String) {
-    val infiniteTransition = rememberInfiniteTransition(label = "laser")
-    val laserPosition by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "laser"
-    )
-
     Box(modifier = modifier) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val canvasWidth = size.width
@@ -390,15 +381,6 @@ fun ScannerOverlay(modifier: Modifier = Modifier, text: String) {
                 Offset(left + boxSize, top + boxSize - cornerLength),
                 strokeWidth
             )
-
-            // Laser Line
-            val laserY = top + (boxSize * laserPosition)
-            drawLine(
-                color = AccentAmber.copy(alpha = 0.6f),
-                start = Offset(left + 10.dp.toPx(), laserY),
-                end = Offset(left + boxSize - 10.dp.toPx(), laserY),
-                strokeWidth = 2.dp.toPx()
-            )
         }
 
         Text(
@@ -419,6 +401,7 @@ fun CameraPreview(
     cameraManager: CameraManager?,
     isFlashOn: Boolean,
     isBackCamera: Boolean,
+    isPaused: Boolean,
     onResult: (ParseResult) -> Unit
 ) {
     if (cameraManager == null || LocalInspectionMode.current) {
@@ -435,9 +418,15 @@ fun CameraPreview(
 
     val lifecycleOwner = LocalLifecycleOwner.current
     val parser = remember { BingoCardParser() }
+    val recognizer = remember { TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS) }
     val scope = rememberCoroutineScope()
 
     var camera by remember { mutableStateOf<Camera?>(null) }
+    val currentOnResult = rememberUpdatedState(onResult)
+    val isPausedState = rememberUpdatedState(isPaused)
+    
+    // To prevent unnecessary re-binding
+    var lastBoundParams by remember { mutableStateOf<Pair<CameraManager, Boolean>?>(null) }
 
     LaunchedEffect(isFlashOn) {
         camera?.cameraControl?.enableTorch(isFlashOn)
@@ -449,53 +438,61 @@ fun CameraPreview(
         },
         modifier = Modifier.fillMaxSize(),
         update = { previewView ->
-            scope.launch {
-                val cameraProvider = cameraManager.getCameraProvider()
-                val preview = androidx.camera.core.Preview.Builder().build().also {
-                    it.surfaceProvider = previewView.surfaceProvider
-                }
-
-                val imageAnalysis = ImageAnalysis.Builder()
-                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                    .build()
-                    .also {
-                        it.setAnalyzer(cameraManager.getAnalysisExecutor()) { imageProxy ->
-                            val mediaImage = imageProxy.image
-                            if (mediaImage != null) {
-                                val image = InputImage.fromMediaImage(
-                                    mediaImage,
-                                    imageProxy.imageInfo.rotationDegrees
-                                )
-                                val recognizer =
-                                    TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-                                recognizer.process(image)
-                                    .addOnSuccessListener { visionText ->
-                                        val result = parser.parse(visionText)
-                                        onResult(result)
-                                    }
-                                    .addOnCompleteListener {
-                                        imageProxy.close()
-                                    }
-                            } else {
-                                imageProxy.close()
-                            }
-                        }
+            val params = Pair(cameraManager, isBackCamera)
+            if (params != lastBoundParams) {
+                lastBoundParams = params
+                scope.launch {
+                    val cameraProvider = cameraManager.getCameraProvider()
+                    val preview = androidx.camera.core.Preview.Builder().build().also {
+                        it.surfaceProvider = previewView.surfaceProvider
                     }
 
-                val cameraSelector =
-                    if (isBackCamera) CameraSelector.DEFAULT_BACK_CAMERA else CameraSelector.DEFAULT_FRONT_CAMERA
+                    val imageAnalysis = ImageAnalysis.Builder()
+                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                        .build()
+                        .also {
+                            it.setAnalyzer(cameraManager.getAnalysisExecutor()) { imageProxy ->
+                                if (isPausedState.value) {
+                                    imageProxy.close()
+                                    return@setAnalyzer
+                                }
+                                val mediaImage = imageProxy.image
+                                if (mediaImage != null) {
+                                    val image = InputImage.fromMediaImage(
+                                        mediaImage,
+                                        imageProxy.imageInfo.rotationDegrees
+                                    )
+                                    recognizer.process(image)
+                                        .addOnSuccessListener { visionText ->
+                                            if (!isPausedState.value) {
+                                                val result = parser.parse(visionText)
+                                                currentOnResult.value(result)
+                                            }
+                                        }
+                                        .addOnCompleteListener {
+                                            imageProxy.close()
+                                        }
+                                } else {
+                                    imageProxy.close()
+                                }
+                            }
+                        }
 
-                try {
-                    camera = cameraManager.bindCamera(
-                        lifecycleOwner,
-                        cameraProvider,
-                        cameraSelector,
-                        preview,
-                        imageAnalysis
-                    )
-                    camera?.cameraControl?.enableTorch(isFlashOn)
-                } catch (exc: Exception) {
-                    Log.e("BingoScanner", "Use case binding failed", exc)
+                    val cameraSelector =
+                        if (isBackCamera) CameraSelector.DEFAULT_BACK_CAMERA else CameraSelector.DEFAULT_FRONT_CAMERA
+
+                    try {
+                        camera = cameraManager.bindCamera(
+                            lifecycleOwner,
+                            cameraProvider,
+                            cameraSelector,
+                            preview,
+                            imageAnalysis
+                        )
+                        camera?.cameraControl?.enableTorch(isFlashOn)
+                    } catch (exc: Exception) {
+                        Log.e("BingoScanner", "Use case binding failed", exc)
+                    }
                 }
             }
         }
