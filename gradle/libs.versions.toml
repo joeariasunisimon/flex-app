@@ -21,6 +21,7 @@ compose-navigation = "2.9.7"
 koin = "4.0.2"
 camerax = "1.4.1"
 mlkit-text-recognition = "16.0.1"
+mlkit-docscanner = "16.0.0"
 accompanist = "0.37.3"
 
 [libraries]
@@ -59,6 +60,7 @@ androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.r
 androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }
 androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "camerax" }
 mlkit-text-recognition = { module = "com.google.mlkit:text-recognition", version.ref = "mlkit-text-recognition" }
+mlkit-document-scanner = { module = "com.google.android.gms:play-services-mlkit-document-scanner", version.ref = "mlkit-docscanner" }
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist" }
 
 [plugins]
