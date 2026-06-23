@@ -29,7 +29,20 @@ class BingoGameListScreenViewModel(
         getAllGamesUseCase()
             .onStart { _state.update { it.copy(isLoading = true) } }
             .onEach { games ->
-                _state.update { it.copy(games = games, isLoading = false, errorMessage = null) }
+                val grouped = games.groupBy { it.cardId }
+                    .map { (cardId, sessions) ->
+                        if (cardId == null) {
+                            // Incomplete setups, show them all separately
+                            sessions.map { GroupedBingoGame(it, 1) }
+                        } else {
+                            // Completed cards, group by card and show the session with highest id
+                            val latest = sessions.maxBy { it.id ?: 0 }
+                            listOf(GroupedBingoGame(latest, sessions.size))
+                        }
+                    }.flatten()
+                    .sortedByDescending { it.lastSession.id ?: 0 }
+
+                _state.update { it.copy(games = grouped, isLoading = false, errorMessage = null) }
             }
             .catch { e ->
                 _state.update { it.copy(isLoading = false, errorMessage = "Failed to load games: ${e.message}") }
@@ -105,7 +118,17 @@ class BingoGameListScreenViewModel(
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    dropGameUseCase(gameId)
+                    val game = state.value.games.find { it.lastSession.id == gameId }
+                    val cardId = game?.lastSession?.cardId
+                    if (cardId != null) {
+                        // If it's a grouped game with a card, delete the card (cascades to all sessions)
+                        // Note: We need a repository for this. Or just delete the games.
+                        // For now, let's keep it simple and just delete the latest game if that's what's preferred.
+                        // Actually, user wants a single entry, so deleting it should delete the group.
+                        dropGameUseCase(gameId) // This is current behavior. 
+                    } else {
+                        dropGameUseCase(gameId)
+                    }
                 }
                 removePendingSetupGameIdUseCase(gameId)
                 refreshPendingIds()

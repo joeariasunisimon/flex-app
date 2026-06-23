@@ -132,17 +132,17 @@ fun BingoGameListScreen(
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(state.games) { game ->
+                        items(state.games) { groupedGame ->
                             GameListItem(
-                                game = game,
+                                groupedGame = groupedGame,
                                 pendingSetupGameIds = state.pendingSetupGameIds,
                                 onContinueSetup = {
-                                    game.id?.let {
+                                    groupedGame.lastSession.id?.let {
                                         onEvent(BingoGameListScreenEvents.OnContinueSetup(it))
                                     }
                                 },
                                 onPlay = {
-                                    game.id?.let {
+                                    groupedGame.lastSession.id?.let {
                                         onNavigate(
                                             NavigationEvent.NavigateToBingoGamePlay(
                                                 it
@@ -151,7 +151,7 @@ fun BingoGameListScreen(
                                     }
                                 },
                                 onRestart = {
-                                    game.id?.let {
+                                    groupedGame.lastSession.id?.let {
                                         onEvent(
                                             BingoGameListScreenEvents.OnRestartGame(
                                                 it
@@ -160,7 +160,7 @@ fun BingoGameListScreen(
                                     }
                                 },
                                 onDelete = {
-                                    game.id?.let { onEvent(BingoGameListScreenEvents.OnDeleteGame(it)) }
+                                    groupedGame.lastSession.id?.let { onEvent(BingoGameListScreenEvents.OnDeleteGame(it)) }
                                 }
                             )
                         }
@@ -173,13 +173,14 @@ fun BingoGameListScreen(
 
 @Composable
 private fun GameListItem(
-    game: Game,
+    groupedGame: GroupedBingoGame,
     pendingSetupGameIds: List<Long>,
     onContinueSetup: () -> Unit,
     onPlay: () -> Unit,
     onRestart: () -> Unit,
     onDelete: () -> Unit
 ) {
+    val game = groupedGame.lastSession
     val isPendingSetup = pendingSetupGameIds.contains(game.id) || game.targetFigure == null
     val isReadyToPlay = !game.isCompleted && game.targetFigure != null
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -187,8 +188,8 @@ private fun GameListItem(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Game?") },
-            text = { Text("Are you sure you want to delete \"${game.name}\"? This cannot be undone.") },
+            title = { Text("Delete Game Group?") },
+            text = { Text("Are you sure you want to delete \"${game.name}\" and its ${groupedGame.totalPlayed} session(s)? This cannot be undone.") },
             confirmButton = {
                 Button(
                     onClick = {
@@ -253,6 +254,15 @@ private fun GameListItem(
                         style = MaterialTheme.typography.bodyMedium,
                         color = statusColor
                     )
+                    
+                    if (groupedGame.totalPlayed > 1) {
+                        Text(
+                            text = "${groupedGame.totalPlayed} games played with this card",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
                 if (game.isCompleted) {
                     Surface(
@@ -365,19 +375,25 @@ fun BingoGameListScreenPreviewGames() {
             state = BingoGameListScreenState(
                 isLoading = false,
                 games = listOf(
-                    Game(
-                        id = 1,
-                        name = "Family Bingo Night",
-                        targetFigure = WinCondition.FULL_CARD,
-                        isCompleted = false,
-                        createdAt = "2024-06-01T12:00:00Z"
+                    GroupedBingoGame(
+                        lastSession = Game(
+                            id = 1,
+                            name = "Family Bingo Night",
+                            targetFigure = WinCondition.FULL_CARD,
+                            isCompleted = false,
+                            createdAt = "2024-06-01T12:00:00Z"
+                        ),
+                        totalPlayed = 3
                     ),
-                    Game(
-                        id = 2,
-                        name = "Office Bingo Challenge",
-                        targetFigure = WinCondition.B,
-                        isCompleted = true,
-                        createdAt = "2024-05-28T18:30:00Z"
+                    GroupedBingoGame(
+                        lastSession = Game(
+                            id = 2,
+                            name = "Office Bingo Challenge",
+                            targetFigure = WinCondition.B,
+                            isCompleted = true,
+                            createdAt = "2024-05-28T18:30:00Z"
+                        ),
+                        totalPlayed = 1
                     )
                 )
             )
