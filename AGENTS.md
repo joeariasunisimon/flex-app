@@ -1,142 +1,70 @@
-# AGENTS.md - FlexApp Bingo Tracker
+# AGENTS.md — FlexApp Bingo Tracker
 
-## Build Commands
+## Build & Run
 
 ```bash
-# Android debug APK
-./gradlew :composeApp:assembleDebug
-
-# iOS framework (for development - simulator)
-./gradlew :shared:assembleSharedDebugFrameworkIosSimulatorArm64
-
-# Full build
-./gradlew build
-
-# Clean + build
-./gradlew clean build
-
-# Regenerate SQLDelight (after .sq changes)
-./gradlew generateCommonMainBingoDatabaseInterface
+./gradlew :composeApp:assembleDebug          # Android debug APK
+./gradlew :shared:assembleSharedDebugFrameworkIosSimulatorArm64  # iOS framework (simulator)
+./gradlew build                               # Full build (all modules)
+./gradlew :shared:check                       # Run shared tests
+./gradlew generateCommonMainBingoDatabaseInterface  # Regenerate SQLDelight after .sq changes
 ```
 
-## Project Structure
+iOS app is opened from `iosApp/` in Xcode; the Kotlin framework must be built first.
 
-```
-FlexApp/
-├── shared/                    # Business logic (KMP shared)
-│   ├── src/commonMain/kotlin/co/jarias/flexapp/
-│   │   ├── domain/model.kt    # Game, BingoCard, WinCondition (Sealed)
-│   │   ├── domain/usecase/    # CreateGameUseCase, etc.
-│   │   └── data/repository/   # GameRepository, etc.
-│   └── src/iosMain/kotlin/co/jarias/flexapp/
-│       ├── di/KoinHelper.kt   # Swift-friendly Koin entry point
-│       └── util/FlowHelper.kt # FlowWatcher for iOS consumption
-├── composeApp/                 # Android UI (Jetpack Compose)
-│   └── src/androidMain/kotlin/co/jarias/flexapp/
-│       ├── ui/
-│       │   ├── navigation/    # AppDestinations, NavigationEvent, AppNavigation
-│       │   └── screens/
-│       │       ├── welcome/
-│       │       ├── tool_selection/
-│       │       └── bingo/
-│       │           ├── card_setup/
-│       │           ├── card_scanner/
-│       │           ├── figure_selection/
-│       │           ├── game_list/
-│       │           ├── game_play/
-│       │           └── game_setup/
-│       └── App.kt
-└── iosApp/                    # iOS entry point (SwiftUI)
-    └── iosApp/
-        ├── NavCoordinators/   # AppNavCoordinator, NavigationEvent (Swift)
-        └── Screens/           # Mirrored structure to Android
-            ├── welcome/
-            ├── tool_selection/
-            └── bingo/
-                ├── game_list/
-                └── ...
-```
+No linter, formatter, or CI is configured in this repo.
 
-## Architecture & Design Philosophy
+## Architecture
 
-- **Clean Architecture**: Domain, Data, and Presentation layers.
-- **"Serious Play" Design**: Earthy teal (`#267365`) + amber (`#F29F05`) palette. DM Sans for typography.
-- **State Management**: 
-    - Android: `ViewModel` with `StateFlow`.
-    - iOS: `ObservableObject` (ViewModel) with `@Published` state, using `FlowWatcher` to collect Kotlin Flows.
-- **Dependency Injection**: Koin (Multiplatform).
-- **Persistence**: SQLDelight (SQLite) for database, DataStore (KMP) for preferences.
-- **Navigation**:
-    - Android: Jetpack Compose Navigation with `NavHost`.
-    - iOS: Coordinator Pattern using `NavigationStack` and `NavigationPath`.
+Kotlin Multiplatform (KMP) with three modules:
 
-## Screen Pattern (Mirrored)
+| Module       | Purpose                                    | Entrypoint                                |
+|-------------|-------------------------------------------|------------------------------------------|
+| `:shared`   | Domain, data, DI (common + platform)      | `di/Koin.kt` — `initKoin()`             |
+| `:composeApp` | Android UI (Jetpack Compose)            | `App.kt` → `NavHost`                    |
+| `iosApp/`   | iOS UI (SwiftUI)                         | `iOSApp.swift` → `AppNavCoordinator`     |
 
-Both platforms follow a similar pattern for screens:
+- **State**: Android uses `ViewModel` + `StateFlow`; iOS uses `ObservableObject` + `@Published`, consuming Kotlin `Flow` via `FlowWatcher` from `shared`.
+- **DI**: Koin Multiplatform. Shared module declares an `expect val platformModule`. Android's concrete module is in `composeApp/.../di/AppModule.kt`. iOS calls `KoinHelperKt.doInitKoin()`.
+- **Persistence**: SQLDelight (SQLite) + DataStore (preferences).
+- **Namespace**: `co.jarias.flexapp` (composeApp), `co.jarias.flexapp.shared` (shared).
 
-### Android (Compose)
+## Screen Pattern (Mirrored Across Platforms)
+
+Every screen follows the same 4-file pattern:
+
 ```
 screen_folder/
-├── {Screen}Screen.kt         # Composable UI + Previews
-├── {Screen}ScreenEvents.kt  # Sealed class for events
-├── {Screen}ScreenState.kt   # Data class for state
-└── {Screen}ScreenViewModel.kt # ViewModel (Koin)
+├── {Screen}Screen.kt / .swift       # UI + Previews
+├── {Screen}ScreenState.kt / .swift  # Data class / struct
+├── {Screen}ScreenEvents.kt / .swift # Sealed class / enum for user actions
+└── {Screen}ScreenViewModel.kt / .swift # ViewModel / ObservableObject
 ```
 
-### iOS (SwiftUI)
-```
-screen_folder/
-├── {Screen}ScreenView.swift     # SwiftUI View
-├── {Screen}ScreenEvents.swift   # Enum for events
-├── {Screen}ScreenState.swift    # Struct for state
-└── {Screen}ScreenViewModel.swift # ObservableObject (Swift)
-```
+When adding a new screen, create all four files and register the ViewModel in `AppModule.kt` (Android) so Koin can inject it.
 
-## Key Game Flows
+## Domain Model (Critical)
 
-### Game Creation & Setup
-1. **Game Setup**: Create game with just a name.
-2. **Card Setup**: Fill 5x5 grid (Columns: B 1-15, I 16-30, N 31-45, G 46-60, O 61-75). Supports step-by-step entry.
-3. **Figure Selection**: Choose target win condition (B, I, N, G, O, or Full Card).
-4. **Gameplay**: Mark numbers to match the target figure. Real-time progress tracking.
-
-## Troubleshooting & Historical Bug Fixes
-
-### Game Creation Hangs (Fixed)
-- **Problem**: UI stayed in loading state after clicking "Create".
-- **Root Cause**: `CreateGameUseCase` returned game with `id = null`.
-- **Fix**: Captured the database-generated ID and returned `game.copy(id = gameId)`.
-
-### Game List Crashes (Fixed)
-- **Problem**: Crash with `No enum constant ... WinCondition.FIVE_IN_ROW`.
-- **Root Cause**: Obsolete enum strings in the database.
-- **Fix**: Updated `GameRepositoryImpl` with a try-catch to return `null` ("Not set") for invalid strings.
-
-### SQLite Constraint Errors (Fixed)
-- **Problem**: `NOT NULL constraint failed: Game.target_figure`.
-- **Root Cause**: Outdated local database schema.
-- **Fix**: Clear app data to force a fresh, correct schema creation.
-
-## iOS Interop (Kotlin/Native)
-
-- **Framework Name**: `shared` (lowercase).
-- **Koin Initialization**: Done via `KoinHelperKt.doInitKoin()` in `iOSApp.swift`.
-- **Flow Consumption**: Use `FlowWatcher<T>` from Swift to collect Kotlin `Flow` types.
-- **Linking**: Requires `linkerOpts("-lsqlite3")` in `shared/build.gradle.kts` and `libsqlite3.tbd` in Xcode "Link Binary With Libraries".
+- **`WinCondition` is a sealed class**, not an enum. It serializes to/from JSON (not enum ordinal names). Always use `WinCondition.serialize()` / `WinCondition.deserialize()`. The DB column `target_figure` stores serialized JSON.
+- **Game**: `id` is database-generated. After `insertGame`, capture the ID and return `game.copy(id = gameId)`. Never rely on the Game returned from the DB call to have a non-null `id`.
+- **BingoCard grid**: 5x5 matrix. Column ranges: B=1–15, I=16–30, N=31–45, G=46–60, O=61–75. Center cell (row 2, col 2) is FREE (`number = null`, `isFree = true`).
 
 ## Database (SQLDelight)
 
-- Schema file: `shared/src/commonMain/sqldelight/.../BingoDatabase.sq`
-- **Do not edit generated files** - modify `.sq` files instead.
+- Schema: `shared/src/commonMain/sqldelight/.../BingoDatabase.sq`
+- Database name: `BingoDatabase` → generates task `generateCommonMainBingoDatabaseInterface`
+- Generated package: `co.jarias.flexapp.shared.database`
+- **Never edit generated files** — only modify the `.sq` file.
 
-## Roadmap (Planned)
+## Patterns to Follow
 
-- [ ] **Phase 4**: Audio & Visual feedback (sound effects, vibrations, mark animations).
-- [ ] **Phase 5**: Multi-card support (playing with more than one card per game).
-- [ ] **Phase 6**: Custom ranges and rules customization.
-- [ ] **Phase 7**: Social features (game sharing via JSON/QR, game statistics).
+1. **Always capture DB-generated IDs**: After `insertGame`, query the last row and return the ID. See `GameRepositoryImpl.insertGame()` and `CreateGameUseCase.invoke()`.
+2. **Defensive deserialization**: When reading `target_figure` from the DB, wrap deserialization in try-catch and return `null` on failure — stale JSON can survive schema migrations.
+3. **Camera previews**: Use `LocalInspectionMode.current` guard in `@Preview` composables to avoid camera initialization crashes at preview time.
 
-## Testing & Previews
+## iOS Interop
 
-- **Compose Previews**: Available in most screen files. Camera components use `LocalInspectionMode` check to avoid crashes.
-- **iOS Previews**: Use `#Preview` macros with mock Coordinators.
+- Framework name: `shared` (set by `baseName = "shared"` in shared/build.gradle.kts)
+- Requires `linkerOpts("-lsqlite3")` in shared/build.gradle.kts and `libsqlite3.tbd` in Xcode
+- Initialize Koin: `KoinHelperKt.doInitKoin()` in `iOSApp.swift`
+- Consume Kotlin `Flow`: use `FlowWatcher<T>` from `shared/src/iosMain/.../util/FlowHelper.kt`
