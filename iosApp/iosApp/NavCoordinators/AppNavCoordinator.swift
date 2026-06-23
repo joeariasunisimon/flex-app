@@ -77,7 +77,7 @@ class AppNavCoordinator: ObservableObject {
         case .bingoCardSetup(let gameId):
             BingoCardSetupScreenView(coordinator: self, gameId: gameId)
         case .bingoCardScanner(let gameId):
-            Text("Scanner for \(gameId)") // Placeholder
+            BingoCardScannerScreenView(coordinator: self, gameId: gameId)
         case .bingoFigureSelection(let gameId):
             BingoFigureSelectionScreenView(coordinator: self, gameId: gameId)
         case .bingoGamePlay(let gameId):

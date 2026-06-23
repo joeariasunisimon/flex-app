@@ -182,9 +182,9 @@ class BingoCardSetupScreenViewModel: ObservableObject {
         
         state.isSaving = true
         let grid = getBingoGrid()
-        let card = BingoCard(id: nil, gameId: state.gameId, grid: grid)
+        let card = BingoCard(id: nil, grid: grid, createdAt: "")
         
-        saveBingoCardUseCase.invoke(card: card) { [weak self] error in
+        saveBingoCardUseCase.invoke(gameId: state.gameId, card: card) { [weak self] error in
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 self.state.isSaving = false

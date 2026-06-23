@@ -54,7 +54,7 @@ class BingoFigureSelectionScreenViewModel: ObservableObject {
         }
         
         state.isUpdating = true
-        let winCondition = state.selectedFigure ?? WinConditionCustom(displayName: "Custom", requiredCells: state.customPattern)
+        let winCondition = state.selectedFigure ?? WinCondition.Custom(displayName: "Custom", requiredCells: state.customPattern)
         
         updateGameFigureUseCase.invoke(gameId: state.gameId, winCondition: winCondition) { [weak self] error in
             DispatchQueue.main.async {
