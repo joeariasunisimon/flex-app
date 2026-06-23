@@ -30,6 +30,9 @@ class BingoCardScannerScreenViewModel(
             is BingoCardScannerScreenEvents.OnScanFailed -> {
                 _state.value = _state.value.copy(scanErrorMessage = event.message)
             }
+            is BingoCardScannerScreenEvents.OnStartScan -> {
+                _state.value = _state.value.copy(scanErrorMessage = null, isProcessing = false)
+            }
             is BingoCardScannerScreenEvents.OnErrorModalDismissed -> {
                 _state.value = _state.value.copy(scanErrorMessage = null)
             }
@@ -37,29 +40,16 @@ class BingoCardScannerScreenViewModel(
             is BingoCardScannerScreenEvents.OnRetry -> {
                 _state.value = _state.value.copy(detectedGrid = null, errorMessage = null, scanErrorMessage = null)
             }
-            is BingoCardScannerScreenEvents.OnFlashToggle -> {
-                _state.value = _state.value.copy(isFlashOn = !_state.value.isFlashOn)
-            }
-            is BingoCardScannerScreenEvents.OnFlipCamera -> {
-                _state.value = _state.value.copy(isBackCamera = !_state.value.isBackCamera)
-            }
-            is BingoCardScannerScreenEvents.OnCaptureClicked -> {
-                if (_state.value.detectedGrid != null) {
-                    saveCard()
-                } else if (_state.value.scanErrorMessage == null) {
-                    _state.value = _state.value.copy(errorMessage = "No card detected yet")
-                }
-            }
         }
     }
 
     private fun saveCard() {
         val gridStrings = _state.value.detectedGrid ?: return
-        
+
         viewModelScope.launch {
             try {
                 _state.value = _state.value.copy(isProcessing = true)
-                
+
                 val grid = List(5) { row ->
                     List(5) { col ->
                         if (row == 2 && col == 2) {
@@ -70,15 +60,15 @@ class BingoCardScannerScreenViewModel(
                         }
                     }
                 }
-                
+
                 val card = BingoCard(id = null, grid = grid, createdAt = "")
-                
+
                 withContext(Dispatchers.IO) {
                     saveBingoCardUseCase(gameId, card)
                 }
-                
+
                 clearCardSetupStateUseCase(gameId)
-                
+
                 _state.value = _state.value.copy(
                     isProcessing = false,
                     cardSaved = true
